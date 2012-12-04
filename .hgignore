@@ -1,0 +1,25 @@
+syntax: glob
+
+*.o
+*.obj
+*.lo
+*.so
+*.so.*
+*.Po
+*.Plo
+*.a
+*.la
+*.lai
+*.pyc
+*.*~
+toolchain/bin/*
+toolchain/lib/*
+toolchain/include/*
+build/*
+python/*
+.sconsign.dblite
+cell_test
+#*#
+
+syntax: regexp
+^group$
