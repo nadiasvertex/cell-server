@@ -12,6 +12,12 @@ public:
    
    sql_parser(const std::string& query);
    ~sql_parser();
+   
+   /** 
+    * Execute the parser.
+    *
+    * @returns: The number of errors encountered. */
+   int parse();
 };
 
 } // end namespace query

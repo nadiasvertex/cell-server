@@ -90,7 +90,12 @@ public:
 #line 6 "src\lib\query\coco\sql.atg"
 public:
    std::vector<query*> queries;
+   
+private:
+   /** The current select query, if any. */
    select *sq;
+   
+public:
 
 /*******************************************************************************
  *  Character Class Descriptions
@@ -114,8 +119,12 @@ public:
 	void Summand();
 	void Factor();
 	void Term();
-	void Value();
-	void Numeric();
+	void Value(
+#line 73 "src\lib\query\coco\sql.atg"
+select::value_expr *&v);
+	void Numeric(
+#line 76 "src\lib\query\coco\sql.atg"
+select::numeric_expr *&nv);
 
 	void Parse();
 

@@ -5,7 +5,12 @@ COMPILER SQL
 
 public:
    std::vector<query*> queries;
+   
+private:
+   /** The current select query, if any. */
    select *sq;
+   
+public:
 
 /*******************************************************************************
  *  Character Class Descriptions
@@ -45,9 +50,10 @@ IGNORE eol + cr + tab
  
 PRODUCTIONS
 
-SQL          = Select.
-Select       = "SELECT"                         (. sq = new sql::select(); .)
-               SelectExpr {',' SelectExpr}.
+SQL          = Select ';'.
+Select       = "SELECT"                          (. sq = new sql::select(); .)
+               SelectExpr                       
+               {',' SelectExpr}.
 SelectExpr   = '*' | Expression.
 Expression   = AndCondition { "OR" AndCondition}.
 AndCondition = Condition { "AND" Condition}.
@@ -58,11 +64,19 @@ ConditionRhs = (Compare ( Operand | ("ALL" | "ANY" | "SOME") '(' Select ')' ) )
              | ("IN" '(' (Select | Expression {',' Expression}) ')')
 .
 Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
-Operand      = Summand "||" Summand.
+Operand      = Summand {"||" Summand}.
 Summand      = Factor {('+' | '-') Factor}.
 Factor       = Term {('*' | '/' | '%') Term}.
-Term         = Value | ( '(' Expression ')' | Select ).
-Value        = Numeric.
-Numeric      = decimal | hex_integer | integer.
+Term         =                                   (. select::value_expr *v; .)
+              Value<v> 
+            | ( '(' Expression ')' | Select ).
+Value<select::value_expr *&v>       =            (. select::numeric_expr *nv; .)
+                                    Numeric<nv>  (. v = nv;                   .)
+.
+Numeric<select::numeric_expr *&nv>  = 
+                                      decimal     (. nv = new select::numeric_expr(t->val, 10, true);  .)
+                                    | hex_integer (. nv = new select::numeric_expr(t->val, 16, false); .)
+                                    | integer     (. nv = new select::numeric_expr(t->val, 10, false); .)
+.
 
 END SQL.

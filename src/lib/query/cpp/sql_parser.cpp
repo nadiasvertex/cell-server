@@ -18,5 +18,12 @@ sql_parser::~sql_parser()
    delete p;
 }
 
+int sql_parser::parse()
+{
+   p->Parse();
+   
+   return p->errors->count;
+}
+
 } // end namespace query
 } // end namespace cell

@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <limits>
 #include <query/cpp/sql_ast.h>
 
@@ -6,11 +5,11 @@ namespace cell {
 namespace query {
 namespace sql {
 
-select::numeric_expr::numeric_expr(const std::string& _v, int base, bool decimal):value_expr(decimal ? type::INT : type::FLOAT, _v)
+select::numeric_expr::numeric_expr(const std::wstring& _v, int base, bool decimal):value_expr(decimal ? type::INT : type::FLOAT, _v)
 {
    if (!decimal)
    {
-      auto nv = std::strtoll(value.c_str(), nullptr, base);
+      auto nv = std::stoll(value, nullptr, base);
       if (nv>=-128 && nv<=127)
       {
          t = type::TINYINT;
@@ -30,7 +29,7 @@ select::numeric_expr::numeric_expr(const std::string& _v, int base, bool decimal
    }
    else
    {
-      auto nv = strtod(value.c_str(), nullptr);
+      auto nv = std::stod(value, nullptr);
       if (nv >= std::numeric_limits<float>::min() &&
           nv <= std::numeric_limits<float>::max())
           {

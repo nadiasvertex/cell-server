@@ -93,31 +93,32 @@ bool Parser::WeakSeparator(int n, int syFol, int repFol) {
 
 void Parser::SQL() {
 		Select();
+		Expect(6 /* ";" */);
 }
 
 void Parser::Select() {
-		Expect(6 /* "SELECT" */);
+		Expect(7 /* "SELECT" */);
 
-#line 49 "src\lib\query\coco\sql.atg"
+#line 54 "src\lib\query\coco\sql.atg"
 		sq = new sql::select(); 
 		SelectExpr();
-		while (la->kind == 7 /* "," */) {
+		while (la->kind == 8 /* "," */) {
 			Get();
 			SelectExpr();
 		}
 }
 
 void Parser::SelectExpr() {
-		if (la->kind == 8 /* "*" */) {
+		if (la->kind == 9 /* "*" */) {
 			Get();
 		} else if (StartOf(1)) {
 			Expression();
-		} else SynErr(37);
+		} else SynErr(38);
 }
 
 void Parser::Expression() {
 		AndCondition();
-		while (la->kind == 9 /* "OR" */) {
+		while (la->kind == 10 /* "OR" */) {
 			Get();
 			AndCondition();
 		}
@@ -125,7 +126,7 @@ void Parser::Expression() {
 
 void Parser::AndCondition() {
 		Condition();
-		while (la->kind == 10 /* "AND" */) {
+		while (la->kind == 11 /* "AND" */) {
 			Get();
 			Condition();
 		}
@@ -137,21 +138,23 @@ void Parser::Condition() {
 			while (StartOf(3)) {
 				ConditionRhs();
 			}
-		} else if (la->kind == 11 /* "NOT" */) {
+		} else if (la->kind == 12 /* "NOT" */) {
 			Get();
 			Condition();
-		} else if (la->kind == 12 /* "EXISTS" */) {
+		} else if (la->kind == 13 /* "EXISTS" */) {
 			Get();
-			Expect(13 /* "(" */);
+			Expect(14 /* "(" */);
 			Select();
-			Expect(14 /* ")" */);
-		} else SynErr(38);
+			Expect(15 /* ")" */);
+		} else SynErr(39);
 }
 
 void Parser::Operand() {
 		Summand();
-		Expect(31 /* "||" */);
-		Summand();
+		while (la->kind == 32 /* "||" */) {
+			Get();
+			Summand();
+		}
 }
 
 void Parser::ConditionRhs() {
@@ -159,91 +162,91 @@ void Parser::ConditionRhs() {
 			Compare();
 			if (StartOf(2)) {
 				Operand();
-			} else if (la->kind == 15 /* "ALL" */ || la->kind == 16 /* "ANY" */ || la->kind == 17 /* "SOME" */) {
-				if (la->kind == 15 /* "ALL" */) {
+			} else if (la->kind == 16 /* "ALL" */ || la->kind == 17 /* "ANY" */ || la->kind == 18 /* "SOME" */) {
+				if (la->kind == 16 /* "ALL" */) {
 					Get();
-				} else if (la->kind == 16 /* "ANY" */) {
+				} else if (la->kind == 17 /* "ANY" */) {
 					Get();
 				} else {
 					Get();
 				}
-				Expect(13 /* "(" */);
+				Expect(14 /* "(" */);
 				Select();
-				Expect(14 /* ")" */);
-			} else SynErr(39);
-		} else if (la->kind == 18 /* "IS" */) {
+				Expect(15 /* ")" */);
+			} else SynErr(40);
+		} else if (la->kind == 19 /* "IS" */) {
 			Get();
-			if (la->kind == 11 /* "NOT" */) {
+			if (la->kind == 12 /* "NOT" */) {
 				Get();
 			}
-			if (la->kind == 19 /* "NULL" */) {
+			if (la->kind == 20 /* "NULL" */) {
 				Get();
 			} else if (StartOf(5)) {
-				if (la->kind == 20 /* "DISTINCT" */) {
+				if (la->kind == 21 /* "DISTINCT" */) {
 					Get();
-					Expect(21 /* "FROM" */);
+					Expect(22 /* "FROM" */);
 				}
 				Operand();
-			} else SynErr(40);
-		} else if (la->kind == 22 /* "BETWEEN" */) {
+			} else SynErr(41);
+		} else if (la->kind == 23 /* "BETWEEN" */) {
 			Get();
 			Operand();
-			Expect(10 /* "AND" */);
+			Expect(11 /* "AND" */);
 			Operand();
-		} else if (la->kind == 23 /* "IN" */) {
+		} else if (la->kind == 24 /* "IN" */) {
 			Get();
-			Expect(13 /* "(" */);
-			if (la->kind == 6 /* "SELECT" */) {
+			Expect(14 /* "(" */);
+			if (la->kind == 7 /* "SELECT" */) {
 				Select();
 			} else if (StartOf(1)) {
 				Expression();
-				while (la->kind == 7 /* "," */) {
+				while (la->kind == 8 /* "," */) {
 					Get();
 					Expression();
 				}
-			} else SynErr(41);
-			Expect(14 /* ")" */);
-		} else SynErr(42);
+			} else SynErr(42);
+			Expect(15 /* ")" */);
+		} else SynErr(43);
 }
 
 void Parser::Compare() {
 		switch (la->kind) {
-		case 24 /* "<>" */: {
+		case 25 /* "<>" */: {
 			Get();
 			break;
 		}
-		case 25 /* "<=" */: {
+		case 26 /* "<=" */: {
 			Get();
 			break;
 		}
-		case 26 /* ">=" */: {
+		case 27 /* ">=" */: {
 			Get();
 			break;
 		}
-		case 27 /* "=" */: {
+		case 28 /* "=" */: {
 			Get();
 			break;
 		}
-		case 28 /* "<" */: {
+		case 29 /* "<" */: {
 			Get();
 			break;
 		}
-		case 29 /* ">" */: {
+		case 30 /* ">" */: {
 			Get();
 			break;
 		}
-		case 30 /* "!=" */: {
+		case 31 /* "!=" */: {
 			Get();
 			break;
 		}
-		default: SynErr(43); break;
+		default: SynErr(44); break;
 		}
 }
 
 void Parser::Summand() {
 		Factor();
-		while (la->kind == 32 /* "+" */ || la->kind == 33 /* "-" */) {
-			if (la->kind == 32 /* "+" */) {
+		while (la->kind == 33 /* "+" */ || la->kind == 34 /* "-" */) {
+			if (la->kind == 33 /* "+" */) {
 				Get();
 			} else {
 				Get();
@@ -254,10 +257,10 @@ void Parser::Summand() {
 
 void Parser::Factor() {
 		Term();
-		while (la->kind == 8 /* "*" */ || la->kind == 34 /* "/" */ || la->kind == 35 /* "%" */) {
-			if (la->kind == 8 /* "*" */) {
+		while (la->kind == 9 /* "*" */ || la->kind == 35 /* "/" */ || la->kind == 36 /* "%" */) {
+			if (la->kind == 9 /* "*" */) {
 				Get();
-			} else if (la->kind == 34 /* "/" */) {
+			} else if (la->kind == 35 /* "/" */) {
 				Get();
 			} else {
 				Get();
@@ -268,30 +271,56 @@ void Parser::Factor() {
 
 void Parser::Term() {
 		if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
-			Value();
-		} else if (la->kind == 6 /* "SELECT" */ || la->kind == 13 /* "(" */) {
-			if (la->kind == 13 /* "(" */) {
+
+#line 70 "src\lib\query\coco\sql.atg"
+			select::value_expr *v; 
+			Value(
+#line 71 "src\lib\query\coco\sql.atg"
+v);
+		} else if (la->kind == 7 /* "SELECT" */ || la->kind == 14 /* "(" */) {
+			if (la->kind == 14 /* "(" */) {
 				Get();
 				Expression();
-				Expect(14 /* ")" */);
+				Expect(15 /* ")" */);
 			} else {
 				Select();
 			}
-		} else SynErr(44);
+		} else SynErr(45);
 }
 
-void Parser::Value() {
-		Numeric();
+void Parser::Value(
+#line 73 "src\lib\query\coco\sql.atg"
+select::value_expr *&v) {
+
+#line 73 "src\lib\query\coco\sql.atg"
+		select::numeric_expr *nv; 
+		Numeric(
+#line 74 "src\lib\query\coco\sql.atg"
+nv);
+
+#line 74 "src\lib\query\coco\sql.atg"
+		v = nv;                   
 }
 
-void Parser::Numeric() {
+void Parser::Numeric(
+#line 76 "src\lib\query\coco\sql.atg"
+select::numeric_expr *&nv) {
 		if (la->kind == _decimal) {
 			Get();
+
+#line 77 "src\lib\query\coco\sql.atg"
+			nv = new select::numeric_expr(t->val, 10, true);  
 		} else if (la->kind == _hex_integer) {
 			Get();
+
+#line 78 "src\lib\query\coco\sql.atg"
+			nv = new select::numeric_expr(t->val, 16, false); 
 		} else if (la->kind == _integer) {
 			Get();
-		} else SynErr(45);
+
+#line 79 "src\lib\query\coco\sql.atg"
+			nv = new select::numeric_expr(t->val, 10, false); 
+		} else SynErr(46);
 }
 
 
@@ -395,7 +424,7 @@ void Parser::Parse() {
 }
 
 Parser::Parser(Scanner *scanner) {
-	maxT = 36;
+	maxT = 37;
 
 	ParserInitCaller<Parser>::CallInit(this);
 	dummyToken = NULL;
@@ -410,13 +439,13 @@ bool Parser::StartOf(int s) {
 	const bool T = true;
 	const bool x = false;
 
-	static bool set[6][38] = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
-		{x,T,T,T, x,x,T,x, x,x,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
-		{x,T,T,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,T,T, T,T,T,T, T,T,T,x, x,x,x,x, x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,T,x, x,x,x,x, x,x},
-		{x,T,T,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x}
+	static bool set[6][39] = {
+		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,T,T, x,x,x,T, x,x,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,T, T,T,T,T, T,T,T,T, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,T,T,T, x,x,x,x, x,x,x},
+		{x,T,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
 	};
 
 
@@ -443,46 +472,47 @@ void Errors::SynErr(int line, int col, int n) {
 			case 3: s = coco_string_create(L"decimal expected"); break;
 			case 4: s = coco_string_create(L"name expected"); break;
 			case 5: s = coco_string_create(L"quoted_name expected"); break;
-			case 6: s = coco_string_create(L"\"SELECT\" expected"); break;
-			case 7: s = coco_string_create(L"\",\" expected"); break;
-			case 8: s = coco_string_create(L"\"*\" expected"); break;
-			case 9: s = coco_string_create(L"\"OR\" expected"); break;
-			case 10: s = coco_string_create(L"\"AND\" expected"); break;
-			case 11: s = coco_string_create(L"\"NOT\" expected"); break;
-			case 12: s = coco_string_create(L"\"EXISTS\" expected"); break;
-			case 13: s = coco_string_create(L"\"(\" expected"); break;
-			case 14: s = coco_string_create(L"\")\" expected"); break;
-			case 15: s = coco_string_create(L"\"ALL\" expected"); break;
-			case 16: s = coco_string_create(L"\"ANY\" expected"); break;
-			case 17: s = coco_string_create(L"\"SOME\" expected"); break;
-			case 18: s = coco_string_create(L"\"IS\" expected"); break;
-			case 19: s = coco_string_create(L"\"NULL\" expected"); break;
-			case 20: s = coco_string_create(L"\"DISTINCT\" expected"); break;
-			case 21: s = coco_string_create(L"\"FROM\" expected"); break;
-			case 22: s = coco_string_create(L"\"BETWEEN\" expected"); break;
-			case 23: s = coco_string_create(L"\"IN\" expected"); break;
-			case 24: s = coco_string_create(L"\"<>\" expected"); break;
-			case 25: s = coco_string_create(L"\"<=\" expected"); break;
-			case 26: s = coco_string_create(L"\">=\" expected"); break;
-			case 27: s = coco_string_create(L"\"=\" expected"); break;
-			case 28: s = coco_string_create(L"\"<\" expected"); break;
-			case 29: s = coco_string_create(L"\">\" expected"); break;
-			case 30: s = coco_string_create(L"\"!=\" expected"); break;
-			case 31: s = coco_string_create(L"\"||\" expected"); break;
-			case 32: s = coco_string_create(L"\"+\" expected"); break;
-			case 33: s = coco_string_create(L"\"-\" expected"); break;
-			case 34: s = coco_string_create(L"\"/\" expected"); break;
-			case 35: s = coco_string_create(L"\"%\" expected"); break;
-			case 36: s = coco_string_create(L"??? expected"); break;
-			case 37: s = coco_string_create(L"invalid SelectExpr"); break;
-			case 38: s = coco_string_create(L"invalid Condition"); break;
-			case 39: s = coco_string_create(L"invalid ConditionRhs"); break;
+			case 6: s = coco_string_create(L"\";\" expected"); break;
+			case 7: s = coco_string_create(L"\"SELECT\" expected"); break;
+			case 8: s = coco_string_create(L"\",\" expected"); break;
+			case 9: s = coco_string_create(L"\"*\" expected"); break;
+			case 10: s = coco_string_create(L"\"OR\" expected"); break;
+			case 11: s = coco_string_create(L"\"AND\" expected"); break;
+			case 12: s = coco_string_create(L"\"NOT\" expected"); break;
+			case 13: s = coco_string_create(L"\"EXISTS\" expected"); break;
+			case 14: s = coco_string_create(L"\"(\" expected"); break;
+			case 15: s = coco_string_create(L"\")\" expected"); break;
+			case 16: s = coco_string_create(L"\"ALL\" expected"); break;
+			case 17: s = coco_string_create(L"\"ANY\" expected"); break;
+			case 18: s = coco_string_create(L"\"SOME\" expected"); break;
+			case 19: s = coco_string_create(L"\"IS\" expected"); break;
+			case 20: s = coco_string_create(L"\"NULL\" expected"); break;
+			case 21: s = coco_string_create(L"\"DISTINCT\" expected"); break;
+			case 22: s = coco_string_create(L"\"FROM\" expected"); break;
+			case 23: s = coco_string_create(L"\"BETWEEN\" expected"); break;
+			case 24: s = coco_string_create(L"\"IN\" expected"); break;
+			case 25: s = coco_string_create(L"\"<>\" expected"); break;
+			case 26: s = coco_string_create(L"\"<=\" expected"); break;
+			case 27: s = coco_string_create(L"\">=\" expected"); break;
+			case 28: s = coco_string_create(L"\"=\" expected"); break;
+			case 29: s = coco_string_create(L"\"<\" expected"); break;
+			case 30: s = coco_string_create(L"\">\" expected"); break;
+			case 31: s = coco_string_create(L"\"!=\" expected"); break;
+			case 32: s = coco_string_create(L"\"||\" expected"); break;
+			case 33: s = coco_string_create(L"\"+\" expected"); break;
+			case 34: s = coco_string_create(L"\"-\" expected"); break;
+			case 35: s = coco_string_create(L"\"/\" expected"); break;
+			case 36: s = coco_string_create(L"\"%\" expected"); break;
+			case 37: s = coco_string_create(L"??? expected"); break;
+			case 38: s = coco_string_create(L"invalid SelectExpr"); break;
+			case 39: s = coco_string_create(L"invalid Condition"); break;
 			case 40: s = coco_string_create(L"invalid ConditionRhs"); break;
 			case 41: s = coco_string_create(L"invalid ConditionRhs"); break;
 			case 42: s = coco_string_create(L"invalid ConditionRhs"); break;
-			case 43: s = coco_string_create(L"invalid Compare"); break;
-			case 44: s = coco_string_create(L"invalid Term"); break;
-			case 45: s = coco_string_create(L"invalid Numeric"); break;
+			case 43: s = coco_string_create(L"invalid ConditionRhs"); break;
+			case 44: s = coco_string_create(L"invalid Compare"); break;
+			case 45: s = coco_string_create(L"invalid Term"); break;
+			case 46: s = coco_string_create(L"invalid Numeric"); break;
 
 		default:
 		{

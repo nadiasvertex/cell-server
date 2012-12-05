@@ -451,41 +451,42 @@ Scanner::~Scanner() {
 void Scanner::Init() {
 	EOL    = '\n';
 	eofSym = 0;
-	maxT = 36;
-	noSym = 36;
+	maxT = 37;
+	noSym = 37;
 	int i;
 	for (i = 49; i <= 57; ++i) start.set(i, 11);
 	for (i = 65; i <= 90; ++i) start.set(i, 7);
 	start.set(48, 12);
-	start.set(45, 27);
+	start.set(45, 28);
 	start.set(34, 8);
-	start.set(44, 13);
-	start.set(42, 14);
-	start.set(40, 15);
-	start.set(41, 16);
-	start.set(60, 28);
-	start.set(62, 29);
-	start.set(61, 20);
-	start.set(33, 21);
-	start.set(124, 23);
-	start.set(43, 30);
-	start.set(47, 25);
-	start.set(37, 26);
+	start.set(59, 13);
+	start.set(44, 14);
+	start.set(42, 15);
+	start.set(40, 16);
+	start.set(41, 17);
+	start.set(60, 29);
+	start.set(62, 30);
+	start.set(61, 21);
+	start.set(33, 22);
+	start.set(124, 24);
+	start.set(43, 31);
+	start.set(47, 26);
+	start.set(37, 27);
 		start.set(Buffer::EoF, -1);
-	keywords.set(L"SELECT", 6);
-	keywords.set(L"OR", 9);
-	keywords.set(L"AND", 10);
-	keywords.set(L"NOT", 11);
-	keywords.set(L"EXISTS", 12);
-	keywords.set(L"ALL", 15);
-	keywords.set(L"ANY", 16);
-	keywords.set(L"SOME", 17);
-	keywords.set(L"IS", 18);
-	keywords.set(L"NULL", 19);
-	keywords.set(L"DISTINCT", 20);
-	keywords.set(L"FROM", 21);
-	keywords.set(L"BETWEEN", 22);
-	keywords.set(L"IN", 23);
+	keywords.set(L"SELECT", 7);
+	keywords.set(L"OR", 10);
+	keywords.set(L"AND", 11);
+	keywords.set(L"NOT", 12);
+	keywords.set(L"EXISTS", 13);
+	keywords.set(L"ALL", 16);
+	keywords.set(L"ANY", 17);
+	keywords.set(L"SOME", 18);
+	keywords.set(L"IS", 19);
+	keywords.set(L"NULL", 20);
+	keywords.set(L"DISTINCT", 21);
+	keywords.set(L"FROM", 22);
+	keywords.set(L"BETWEEN", 23);
+	keywords.set(L"IN", 24);
 
 
 	tvalLength = 128;
@@ -720,16 +721,15 @@ Token* Scanner::NextToken() {
 			else if (ch == L'.') {AddCh(); goto case_3;}
 			else {t->kind = 2; break;}
 		case 13:
-			{t->kind = 7; break;}
+			{t->kind = 6; break;}
 		case 14:
 			{t->kind = 8; break;}
 		case 15:
-			{t->kind = 13; break;}
+			{t->kind = 9; break;}
 		case 16:
 			{t->kind = 14; break;}
 		case 17:
-			case_17:
-			{t->kind = 24; break;}
+			{t->kind = 15; break;}
 		case 18:
 			case_18:
 			{t->kind = 25; break;}
@@ -737,42 +737,45 @@ Token* Scanner::NextToken() {
 			case_19:
 			{t->kind = 26; break;}
 		case 20:
+			case_20:
 			{t->kind = 27; break;}
 		case 21:
-			if (ch == L'=') {AddCh(); goto case_22;}
-			else {goto case_0;}
+			{t->kind = 28; break;}
 		case 22:
-			case_22:
-			{t->kind = 30; break;}
-		case 23:
-			if (ch == L'|') {AddCh(); goto case_24;}
+			if (ch == L'=') {AddCh(); goto case_23;}
 			else {goto case_0;}
-		case 24:
-			case_24:
+		case 23:
+			case_23:
 			{t->kind = 31; break;}
+		case 24:
+			if (ch == L'|') {AddCh(); goto case_25;}
+			else {goto case_0;}
 		case 25:
-			{t->kind = 34; break;}
+			case_25:
+			{t->kind = 32; break;}
 		case 26:
 			{t->kind = 35; break;}
 		case 27:
+			{t->kind = 36; break;}
+		case 28:
+			recEnd = pos; recKind = 34;
+			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_11;}
+			else if (ch == L'0') {AddCh(); goto case_12;}
+			else {t->kind = 34; break;}
+		case 29:
+			recEnd = pos; recKind = 29;
+			if (ch == L'>') {AddCh(); goto case_18;}
+			else if (ch == L'=') {AddCh(); goto case_19;}
+			else {t->kind = 29; break;}
+		case 30:
+			recEnd = pos; recKind = 30;
+			if (ch == L'=') {AddCh(); goto case_20;}
+			else {t->kind = 30; break;}
+		case 31:
 			recEnd = pos; recKind = 33;
 			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_11;}
 			else if (ch == L'0') {AddCh(); goto case_12;}
 			else {t->kind = 33; break;}
-		case 28:
-			recEnd = pos; recKind = 28;
-			if (ch == L'>') {AddCh(); goto case_17;}
-			else if (ch == L'=') {AddCh(); goto case_18;}
-			else {t->kind = 28; break;}
-		case 29:
-			recEnd = pos; recKind = 29;
-			if (ch == L'=') {AddCh(); goto case_19;}
-			else {t->kind = 29; break;}
-		case 30:
-			recEnd = pos; recKind = 32;
-			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_11;}
-			else if (ch == L'0') {AddCh(); goto case_12;}
-			else {t->kind = 32; break;}
 
 	}
 	AppendVal(t);

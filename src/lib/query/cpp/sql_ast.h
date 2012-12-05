@@ -45,14 +45,14 @@ class select : public query
    class value_expr : public expr
    {      
    public:
-      std::string value;
-      value_expr(const type& _t, const std::string& _v):expr(expr::kind::VALUE, _t), value(_v) {}
+      std::wstring value;
+      value_expr(const type& _t, const std::wstring& _v):expr(expr::kind::VALUE, _t), value(_v) {}
    };
    
    class numeric_expr : public value_expr
    {   
    public:
-      numeric_expr(const std::string& _v, int base, bool decimal);
+      numeric_expr(const std::wstring& _v, int base, bool decimal);
    };
    
    class unary_expr : public expr
