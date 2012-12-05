@@ -43,6 +43,18 @@ select::numeric_expr::numeric_expr(const std::string& _v, int base, bool decimal
    }
 }
 
+select::binary_expr::binary_expr(const std::string& _op, expr* l, expr* r):
+   expr(expr::kind::OP, l->t), op(_op), left(l), right(r) 
+{
+   if (r->t > t)
+   {
+      // The type on the left side is not big enough to contain
+      // (potentially) the type on the right side. So we have to
+      // match the left type to the right type.
+      t = r->t;
+   }
+}
+
 } // end namespace sql
 } // end namespace query
 } // end namespace cell

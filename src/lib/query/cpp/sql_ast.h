@@ -55,6 +55,13 @@ class select : public query
       numeric_expr(const std::string& _v, int base, bool decimal);
    };
    
+   class binary_expr : public expr
+   {
+      expr *left, *right;
+   public:
+      std::string op;
+      binary_expr(const std::string& _op, expr* l, expr* r);
+   };   
 };
 
 } // end namespace sql
