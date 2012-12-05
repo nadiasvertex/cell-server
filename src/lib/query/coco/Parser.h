@@ -32,6 +32,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 
 
 #line 1 "src\lib\query\coco\sql.atg"
+#include <vector>
 #include <query/cpp/sql_ast.h>
 
 
@@ -86,7 +87,15 @@ public:
 	Token *la;			// lookahead token
 
 
-#line 9 "src\lib\query\coco\sql.atg"
+#line 6 "src\lib\query\coco\sql.atg"
+public:
+   std::vector<query*> queries;
+   select *sq;
+
+/*******************************************************************************
+ *  Character Class Descriptions
+ *******************************************************************************/
+
 
 
 	Parser(Scanner *scanner);

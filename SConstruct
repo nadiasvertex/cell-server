@@ -73,5 +73,5 @@ env.CLILibrary("data_engine_framework", glob("src/lib/data_engine/cs/*.cs"),
 env.Program("cell_test",
             ["tests/gtest/gtest-all.cc",
             "tests/gtest/gtest_main.cc"] + glob("tests/*.cpp"),
-	    LIBS=['data_engine'] + libs
+	    LIBS=['sql', 'data_engine'] + libs
 )

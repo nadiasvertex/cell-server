@@ -1,6 +1,11 @@
+#include <vector>
 #include <query/cpp/sql_ast.h>
 
 COMPILER SQL
+
+public:
+   std::vector<query*> queries;
+   select *sq;
 
 /*******************************************************************************
  *  Character Class Descriptions
@@ -34,10 +39,15 @@ COMMENTS FROM "/*" TO "*/"
 COMMENTS FROM "--" TO eol
 IGNORE eol + cr + tab
 
+/*******************************************************************************
+ *  Grammar Productions
+ *******************************************************************************/
+ 
 PRODUCTIONS
 
 SQL          = Select.
-Select       = "SELECT" SelectExpr {',' SelectExpr}.
+Select       = "SELECT"                         (. sq = new sql::select(); .)
+               SelectExpr {',' SelectExpr}.
 SelectExpr   = '*' | Expression.
 Expression   = AndCondition { "OR" AndCondition}.
 AndCondition = Condition { "AND" Condition}.

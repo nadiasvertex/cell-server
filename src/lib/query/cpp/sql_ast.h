@@ -55,6 +55,14 @@ class select : public query
       numeric_expr(const std::string& _v, int base, bool decimal);
    };
    
+   class unary_expr : public expr
+   {
+      expr *child;
+   public:
+      std::string op;
+      unary_expr(const std::string& _op, expr* c);
+   };
+   
    class binary_expr : public expr
    {
       expr *left, *right;

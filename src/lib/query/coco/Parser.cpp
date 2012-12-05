@@ -97,6 +97,9 @@ void Parser::SQL() {
 
 void Parser::Select() {
 		Expect(6 /* "SELECT" */);
+
+#line 49 "src\lib\query\coco\sql.atg"
+		sq = new sql::select(); 
 		SelectExpr();
 		while (la->kind == 7 /* "," */) {
 			Get();
