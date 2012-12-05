@@ -1,0 +1,58 @@
+
+COMPILER SQL
+
+/*******************************************************************************
+ *  Character Class Descriptions
+ *******************************************************************************/
+
+CHARACTERS
+
+tab         = '\u0009'.
+eol         = '\u000a'.             /* 10 = line feed */
+cr          = '\u000d'.             /* 13 = carriage return */
+new_line    = cr + eol.
+digit       = "0123456789".         /* the set of all digits */
+hex_digit   = digit + "ABCDEF".     /* the set of all hexadecimal digits */
+letter      = 'A' .. 'Z'.           /* the set of all upper case letters */
+quoted_char = ANY - '"' - new_line. /* the set of all characters available for
+                                       quoted names. */
+
+/*******************************************************************************
+ *  Scanner Description
+ *******************************************************************************/
+ 
+TOKENS
+
+hex_integer = ['+'|'-'] "0x" hex_digit {hex_digit}.
+integer     = ['+'|'-'] digit {digit}.
+decimal     = ['+'|'-'] digit {digit} '.' {digit} ['E' ['+'|'-'] digit {digit}].
+name        = letter {letter | digit | '_'}.
+quoted_name = '"' quoted_char '"'.
+
+COMMENTS FROM "/*" TO "*/"
+COMMENTS FROM "--" TO eol
+
+IGNORE eol + cr + tab
+
+PRODUCTIONS
+
+SQL          = {Select}.
+Select       = "SELECT" SelectExpr {',' SelectExpr}.
+SelectExpr   = '*' | Expression.
+Expression   = AndCondition { "OR" AndCondition}.
+AndCondition = Condition { "AND" Condition}.
+Condition    = Operand { ConditionRhs } | "NOT" Condition | "EXISTS" '(' Select ')'.
+ConditionRhs = (Compare ( Operand | ("ALL" | "ANY" | "SOME") '(' Select ')' ) )
+             | ("IS" ["NOT"] ("NULL" | ["DISTINCT" "FROM"] Operand))
+             | ("BETWEEN" Operand "AND" Operand)
+             | ("IN" '(' (Select | Expression {',' Expression}) ')')
+.
+Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
+Operand      = Summand "||" Summand.
+Summand      = Factor {('+' | '-') Factor}.
+Factor       = Term {('*' | '/' | '%') Term}.
+Term         = Value.
+Value        = Numeric.
+Numeric      = decimal | hex_integer | integer.
+
+END SQL.
