@@ -31,6 +31,9 @@ Coco/R itself) does not fall under the GNU General Public License.
 #define cell__query__sql_COCO_PARSER_H__
 
 
+#line 1 "src\lib\query\coco\sql.atg"
+#include <query/cpp/sql_ast.h>
+
 
 #include "Scanner.h"
 
@@ -83,7 +86,7 @@ public:
 	Token *la;			// lookahead token
 
 
-#line 8 "src\lib\query\coco\sql.atg"
+#line 9 "src\lib\query\coco\sql.atg"
 
 
 	Parser(Scanner *scanner);

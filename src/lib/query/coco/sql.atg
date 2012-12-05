@@ -1,3 +1,4 @@
+#include <query/cpp/sql_ast.h>
 
 COMPILER SQL
 
