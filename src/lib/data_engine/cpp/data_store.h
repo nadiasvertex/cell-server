@@ -1,3 +1,4 @@
+#include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <data_engine/cpp/column_id.h>
 

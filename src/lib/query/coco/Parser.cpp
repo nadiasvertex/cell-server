@@ -92,9 +92,7 @@ bool Parser::WeakSeparator(int n, int syFol, int repFol) {
 }
 
 void Parser::SQL() {
-		while (la->kind == 6 /* "SELECT" */) {
-			Select();
-		}
+		Select();
 }
 
 void Parser::Select() {
@@ -131,9 +129,9 @@ void Parser::AndCondition() {
 }
 
 void Parser::Condition() {
-		if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
+		if (StartOf(2)) {
 			Operand();
-			while (StartOf(2)) {
+			while (StartOf(3)) {
 				ConditionRhs();
 			}
 		} else if (la->kind == 11 /* "NOT" */) {
@@ -154,9 +152,9 @@ void Parser::Operand() {
 }
 
 void Parser::ConditionRhs() {
-		if (StartOf(3)) {
+		if (StartOf(4)) {
 			Compare();
-			if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
+			if (StartOf(2)) {
 				Operand();
 			} else if (la->kind == 15 /* "ALL" */ || la->kind == 16 /* "ANY" */ || la->kind == 17 /* "SOME" */) {
 				if (la->kind == 15 /* "ALL" */) {
@@ -177,7 +175,7 @@ void Parser::ConditionRhs() {
 			}
 			if (la->kind == 19 /* "NULL" */) {
 				Get();
-			} else if (StartOf(4)) {
+			} else if (StartOf(5)) {
 				if (la->kind == 20 /* "DISTINCT" */) {
 					Get();
 					Expect(21 /* "FROM" */);
@@ -266,7 +264,17 @@ void Parser::Factor() {
 }
 
 void Parser::Term() {
-		Value();
+		if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
+			Value();
+		} else if (la->kind == 6 /* "SELECT" */ || la->kind == 13 /* "(" */) {
+			if (la->kind == 13 /* "(" */) {
+				Get();
+				Expression();
+				Expect(14 /* ")" */);
+			} else {
+				Select();
+			}
+		} else SynErr(44);
 }
 
 void Parser::Value() {
@@ -280,7 +288,7 @@ void Parser::Numeric() {
 			Get();
 		} else if (la->kind == _integer) {
 			Get();
-		} else SynErr(44);
+		} else SynErr(45);
 }
 
 
@@ -399,12 +407,13 @@ bool Parser::StartOf(int s) {
 	const bool T = true;
 	const bool x = false;
 
-	static bool set[5][38] = {
+	static bool set[6][38] = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
-		{x,T,T,T, x,x,x,x, x,x,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
+		{x,T,T,T, x,x,T,x, x,x,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
+		{x,T,T,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,T,T, T,T,T,T, T,T,T,x, x,x,x,x, x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,T,x, x,x,x,x, x,x},
-		{x,T,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x}
+		{x,T,T,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x}
 	};
 
 
@@ -469,7 +478,8 @@ void Errors::SynErr(int line, int col, int n) {
 			case 41: s = coco_string_create(L"invalid ConditionRhs"); break;
 			case 42: s = coco_string_create(L"invalid ConditionRhs"); break;
 			case 43: s = coco_string_create(L"invalid Compare"); break;
-			case 44: s = coco_string_create(L"invalid Numeric"); break;
+			case 44: s = coco_string_create(L"invalid Term"); break;
+			case 45: s = coco_string_create(L"invalid Numeric"); break;
 
 		default:
 		{

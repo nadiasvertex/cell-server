@@ -46,7 +46,8 @@ if os.environ.has_key('TERM'):
 # )
 
 # Query parser library
-env.Library("sql", glob("src/lib/query/cpp/*.cpp"))
+env.Library("sql", glob("src/lib/query/cpp/*.cpp") +\
+                   glob("src/lib/query/coco/*.cpp"))
 
 # Data engine library
 env.Library("data_engine", glob("src/lib/data_engine/cpp/*.cpp"))

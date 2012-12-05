@@ -126,6 +126,9 @@ public:
 		
 		return new_id;
 	}
+   
+   virtual bool filter(const column_id& cid, MonoMethod *m) {}
+   virtual MonoObject* transform(const column_id& cid, MonoMethod *m) {}
 };
 
 } // end namespace engine

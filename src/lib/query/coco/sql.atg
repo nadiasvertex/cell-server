@@ -31,12 +31,11 @@ quoted_name = '"' quoted_char '"'.
 
 COMMENTS FROM "/*" TO "*/"
 COMMENTS FROM "--" TO eol
-
 IGNORE eol + cr + tab
 
 PRODUCTIONS
 
-SQL          = {Select}.
+SQL          = Select.
 Select       = "SELECT" SelectExpr {',' SelectExpr}.
 SelectExpr   = '*' | Expression.
 Expression   = AndCondition { "OR" AndCondition}.
@@ -51,7 +50,7 @@ Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
 Operand      = Summand "||" Summand.
 Summand      = Factor {('+' | '-') Factor}.
 Factor       = Term {('*' | '/' | '%') Term}.
-Term         = Value.
+Term         = Value | ( '(' Expression ')' | Select ).
 Value        = Numeric.
 Numeric      = decimal | hex_integer | integer.
 
