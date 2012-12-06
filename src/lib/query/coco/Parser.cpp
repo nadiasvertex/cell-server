@@ -203,7 +203,8 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 			} else SynErr(40);
 		} else if (la->kind == 19 /* "IS" */) {
 			Get();
-			bool is_not = false;                      
+			bool is_not = false; 
+			bool distinct_from = false;               
 			if (la->kind == 12 /* "NOT" */) {
 				Get();
 				is_not = true;                            
@@ -222,8 +223,26 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 				if (la->kind == 21 /* "DISTINCT" */) {
 					Get();
 					Expect(22 /* "FROM" */);
+					distinct_from = true;                    
 				}
 				Operand(e);
+				e = new select::binary_expr(
+				         L"IS",
+				         l, e
+				);
+				if (distinct_from)
+				{
+				 e = new select::unary_expr(
+				         L"DISTINCT_FROM", e
+				 );
+				}
+				if (is_not)
+				{
+				 e = new select::unary_expr(
+				         L"NOT", e
+				 );
+				}
+				                                        
 			} else SynErr(41);
 		} else if (la->kind == 23 /* "BETWEEN" */) {
 			Get();
@@ -289,7 +308,7 @@ void Parser::Summand(select::expr *&e) {
 			}
 			select::expr *r; std::wstring op(t->val);  
 			Factor(r);
-			e = new select::binary_expr(op, e, r);    
+			e = new select::binary_expr(op, e, r);     
 		}
 }
 
@@ -305,15 +324,15 @@ void Parser::Factor(select::expr *&e) {
 			}
 			select::expr *r; std::wstring op(t->val);  
 			Term(r);
-			e = new select::binary_expr(op, e, r);    
+			e = new select::binary_expr(op, e, r);     
 		}
 }
 
 void Parser::Term(select::expr *&e) {
 		if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
-			select::value_expr *v; 
+			select::value_expr *v;                     
 			Value(v);
-			e = v;                 
+			e = v;                                     
 		} else if (la->kind == 7 /* "SELECT" */ || la->kind == 14 /* "(" */) {
 			if (la->kind == 14 /* "(" */) {
 				Get();
@@ -321,6 +340,9 @@ void Parser::Term(select::expr *&e) {
 				Expect(15 /* ")" */);
 			} else {
 				Select();
+				e = new select::sub_select_expr(
+				          sq_stack.top()
+				 ); sq_stack.pop();                         
 			}
 		} else SynErr(45);
 }

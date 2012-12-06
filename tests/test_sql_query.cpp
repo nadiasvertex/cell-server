@@ -22,3 +22,44 @@ TEST(SqlQueryTest, CanParseSelectOne)
    
    ASSERT_EQ(0, p.parse());
 }
+
+TEST(SqlQueryTest, CanParseSelectOneCommaTwo)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 1, 2;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+
+TEST(SqlQueryTest, CanParseSelectOnePlusOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 1+1;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectOneTimesOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 1*1;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectComplexLiteralExpr)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 10*5+4-3/2%11;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
