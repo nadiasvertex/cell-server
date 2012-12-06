@@ -44,6 +44,26 @@ TEST(SqlQueryTest, CanParseSelectOnePlusOne)
    ASSERT_EQ(0, p.parse());
 }
 
+TEST(SqlQueryTest, CanParseSelectPosOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT +1;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectNegOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT -1;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
 TEST(SqlQueryTest, CanParseSelectOneTimesOne)
 {
    using namespace cell::query;
