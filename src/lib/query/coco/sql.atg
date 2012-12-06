@@ -55,19 +55,8 @@ IGNORE eol + cr + tab
  
 PRODUCTIONS
 
-SQL          = Select ';'.
-Select       = "SELECT"                          (. sq_stack.push(
-                                                      new sql::select(
-                                                       sq_stack.size() > 0 ? sq_stack.top() : nullptr
-                                                      )
-                                                    ); 
-                                                    select::expr *e = nullptr;                .)
-                                                    
-              SelectExpr<e>                      (. sq_stack.top()->add_select_expression(e); .)                  
-               {',' SelectExpr<e>                (. sq_stack.top()->add_select_expression(e); .)
-               }
-               
-                                                 (. queries.push_back(
+SQL          = 
+ Select                                          (. queries.push_back(
                                                       query_handle_type(
                                                          sq_stack.top()
                                                       )
@@ -80,7 +69,20 @@ Select       = "SELECT"                          (. sq_stack.push(
                                                       L"empty at this point.");
                                                     }
                                                                                              .)
-.
+';'.
+
+
+Select       = "SELECT"                          (. sq_stack.push(
+                                                      new sql::select(
+                                                       sq_stack.size() > 0 ? sq_stack.top() : nullptr
+                                                      )
+                                                    ); 
+                                                    select::expr *e = nullptr;                .)
+                                                    
+              SelectExpr<e>                      (. sq_stack.top()->add_select_expression(e); .)                  
+               {',' SelectExpr<e>                (. sq_stack.top()->add_select_expression(e); .)
+               }
+.                                                 
              
 SelectExpr<select::expr *&e>   = '*' 
                                  | Expression<e>

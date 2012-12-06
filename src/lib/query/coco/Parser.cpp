@@ -93,6 +93,19 @@ bool Parser::WeakSeparator(int n, int syFol, int repFol) {
 
 void Parser::SQL() {
 		Select();
+		queries.push_back(
+		 query_handle_type(
+		    sq_stack.top()
+		 )
+		); sq_stack.pop();
+		
+		if (sq_stack.size())
+		{
+		 errors->Error(t->line, t->col, 
+		 L"internal error: select stack not "
+		 L"empty at this point.");
+		}
+		                                        
 		Expect(6 /* ";" */);
 }
 
@@ -111,19 +124,6 @@ void Parser::Select() {
 			SelectExpr(e);
 			sq_stack.top()->add_select_expression(e); 
 		}
-		queries.push_back(
-		 query_handle_type(
-		    sq_stack.top()
-		 )
-		); sq_stack.pop();
-		
-		if (sq_stack.size())
-		{
-		 errors->Error(t->line, t->col, 
-		 L"internal error: select stack not "
-		 L"empty at this point.");
-		}
-		                                        
 }
 
 void Parser::SelectExpr(select::expr *&e) {
