@@ -42,11 +42,11 @@ select::numeric_expr::numeric_expr(const std::wstring& _v, int base, bool decima
    }
 }
 
-select::unary_expr::unary_expr(const std::string& _op, expr* c):
+select::unary_expr::unary_expr(const std::wstring& _op, expr* c):
     expr(expr::kind::OP, c->t), op(_op), child(c)
 {}
 
-select::binary_expr::binary_expr(const std::string& _op, expr* l, expr* r):
+select::binary_expr::binary_expr(const std::wstring& _op, expr* l, expr* r):
    expr(expr::kind::OP, l->t), op(_op), left(l), right(r) 
 {
    if (r->t > t)
@@ -55,6 +55,22 @@ select::binary_expr::binary_expr(const std::string& _op, expr* l, expr* r):
       // (potentially) the type on the right side. So we have to
       // match the left type to the right type.
       t = r->t;
+   }
+}
+
+select::sub_select_expr::sub_select_expr(select* _ss):expr(kind::SUB_SELECT, type::INT), ss(_ss)
+{
+   if (ss!=nullptr && ss->count_select_expressions() > 0)
+   {
+      t = ss->select_expression(0)->t;
+   }
+}
+
+select::~select()
+{
+   for(auto* se : select_expressions)
+   {
+      delete se;
    }
 }
 

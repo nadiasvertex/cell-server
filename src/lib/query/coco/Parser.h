@@ -109,21 +109,37 @@ public:
 
 	void SQL();
 	void Select();
-	void SelectExpr();
-	void Expression();
-	void AndCondition();
-	void Condition();
-	void Operand();
+	void SelectExpr(
+#line 62 "src\lib\query\coco\sql.atg"
+select::expr *&e);
+	void Expression(
+#line 67 "src\lib\query\coco\sql.atg"
+select::expr *&e);
+	void AndCondition(
+#line 75 "src\lib\query\coco\sql.atg"
+select::expr *&e);
+	void Condition(
+#line 82 "src\lib\query\coco\sql.atg"
+select::expr *&e);
+	void Operand(
+#line 97 "src\lib\query\coco\sql.atg"
+select::expr *&e);
 	void ConditionRhs();
 	void Compare();
-	void Summand();
-	void Factor();
-	void Term();
+	void Summand(
+#line 105 "src\lib\query\coco\sql.atg"
+select::expr *&e);
+	void Factor(
+#line 113 "src\lib\query\coco\sql.atg"
+select::expr *&e);
+	void Term(
+#line 121 "src\lib\query\coco\sql.atg"
+select::expr *&e);
 	void Value(
-#line 73 "src\lib\query\coco\sql.atg"
+#line 129 "src\lib\query\coco\sql.atg"
 select::value_expr *&v);
 	void Numeric(
-#line 76 "src\lib\query\coco\sql.atg"
+#line 132 "src\lib\query\coco\sql.atg"
 select::numeric_expr *&nv);
 
 	void Parse();

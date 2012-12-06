@@ -51,25 +51,81 @@ IGNORE eol + cr + tab
 PRODUCTIONS
 
 SQL          = Select ';'.
-Select       = "SELECT"                          (. sq = new sql::select(); .)
-               SelectExpr                       
-               {',' SelectExpr}.
-SelectExpr   = '*' | Expression.
-Expression   = AndCondition { "OR" AndCondition}.
-AndCondition = Condition { "AND" Condition}.
-Condition    = Operand { ConditionRhs } | "NOT" Condition | "EXISTS" '(' Select ')'.
-ConditionRhs = (Compare ( Operand | ("ALL" | "ANY" | "SOME") '(' Select ')' ) )
-             | ("IS" ["NOT"] ("NULL" | ["DISTINCT" "FROM"] Operand))
-             | ("BETWEEN" Operand "AND" Operand)
-             | ("IN" '(' (Select | Expression {',' Expression}) ')')
+Select       = "SELECT"                          (. sq = new sql::select(); 
+                                                    select::expr *e = nullptr;    .)
+                                                    
+              SelectExpr<e>                      (. sq->add_select_expression(e); .)                  
+               {',' SelectExpr<e>                (. sq->add_select_expression(e); .)
+               }
 .
+             
+SelectExpr<select::expr *&e>   = '*' 
+                                 | Expression<e>
+.
+
+
+Expression<select::expr *&e>   = 
+  AndCondition<e> 
+  { 
+    "OR"                                         (. select::expr *r;                           .)
+    AndCondition<r>                              (. e = new select::binary_expr(L"OR", e, r);  .)   
+  }
+.
+
+AndCondition<select::expr *&e> = 
+  Condition<e> 
+  { 
+   "AND"                                         (. select::expr *r;                          .)
+   Condition<r>                                  (. e = new select::binary_expr(L"AND", e, r);.)
+  }
+.
+Condition<select::expr *&e>    = 
+   Operand<e>  { ConditionRhs } 
+ | "NOT" Condition<e>                            (. e = new select::unary_expr(L"NOT", e); .)
+ | "EXISTS" '(' Select ')'
+.
+
+ConditionRhs                   =                 (. select::expr *e;                          .)
+   (Compare ( Operand<e> | ("ALL" | "ANY" | "SOME") '(' Select ')' ) )
+ | ("IS" ["NOT"] ("NULL" | ["DISTINCT" "FROM"] Operand<e>))
+ | ("BETWEEN" Operand<e> "AND" Operand<e>)
+  ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
+.
+
 Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
-Operand      = Summand {"||" Summand}.
-Summand      = Factor {('+' | '-') Factor}.
-Factor       = Term {('*' | '/' | '%') Term}.
-Term         =                                   (. select::value_expr *v; .)
-              Value<v> 
-            | ( '(' Expression ')' | Select ).
+
+Operand<select::expr *&e>      = 
+  Summand<e> 
+  {
+   "||"                                            (. select::expr *r;                          .)
+   Summand<r>                                      (. e = new select::binary_expr(L"||", e, r); .)
+  }
+.
+
+Summand<select::expr *&e>      = 
+  Factor<e> 
+  {
+   ('+' | '-')                                     (. select::expr *r; std::wstring op(t.val);  .)
+   Factor<r>                                       (. e = new select::binary_expr(op, e, r);    .)
+  }
+.
+
+Factor<select::expr *&e>       = 
+  Term<e> 
+  {
+   ('*' | '/' | '%')                               (. select::expr *r; std::wstring op(t.val);  .)
+   Term<r>                                         (. e = new select::binary_expr(op, e, r);    .)
+  }
+.
+
+Term<select::expr *&e>              =            (. select::value_expr *v; .)
+              Value<v>                           (. e = v;                 .)
+            | ( 
+                '('  Expression<e> ')'           
+                | Select 
+              )
+.
+
 Value<select::value_expr *&v>       =            (. select::numeric_expr *nv; .)
                                     Numeric<nv>  (. v = nv;                   .)
 .
