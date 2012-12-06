@@ -162,32 +162,68 @@ cs_backend::generate_expression(sql::select::expr_handle_type &e)
 bool 
 cs_backend::generate_select(sql::select *sq)
 {
-   s << L"public class select_query ";
+   s << "public class select_query ";
    block cb(s,1);
    
    auto se_count = sq->count_select_expressions();
+   
+   cb.indent();
+   s << "[ProtoContract]" << std::endl;
+   cb.indent();
+   s << "public struct output {" << std::endl;
+   // Generate struct to contain select expression output
+   for(auto i = 0; i< se_count; ++i)
+   {
+      cb.indent();
+      s << "  [ProtoMember(" << i << ")] public ";       
+      auto se = sq->select_expression(i);
+      generate_type(se->t);
+      s << " c"
+        << i << ";"
+        << std::endl;
+   }
+   cb.indent();
+   s << L"};" << std::endl;
+   
+   // Generate select expression evaluators
    for(auto i = 0; i< se_count; ++i)
    {
       auto se = sq->select_expression(i);
       
       cb.indent();
       generate_type(se->t);
-      s << L" select_expr_"
+      s << " select_expr_"
         << i
-        << L"() ";
+        << "() ";
         
       block seb(s,2);
       seb.indent();
-      s << L"return ";
+      s << "return ";
             
       if (generate_expression(se)==false)
       {
          return false;
       }
       
-      s << L";" << std::endl;
-   }     
-   
+      s << ";" << std::endl;
+   }
+
+   // Generate serializer.
+   cb.indent();
+   s << "public void serialize() {" << std::endl;   
+   cb.indent();
+   s << "   var data = new output {";
+   for(auto i = 0; i< se_count; ++i)
+   {      
+      s << "c" << i << "=select_expr_" << i << "()";
+      if (i < se_count-1)
+      {
+         s << ", ";
+      }
+   }
+   s << "};" << std::endl;
+   cb.indent();
+   s << "}" << std::endl;
    return true;   
 }
    
