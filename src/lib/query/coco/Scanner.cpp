@@ -457,21 +457,21 @@ void Scanner::Init() {
 	for (i = 49; i <= 57; ++i) start.set(i, 11);
 	for (i = 65; i <= 90; ++i) start.set(i, 7);
 	start.set(48, 12);
-	start.set(45, 28);
 	start.set(34, 8);
 	start.set(59, 13);
 	start.set(44, 14);
 	start.set(42, 15);
 	start.set(40, 16);
 	start.set(41, 17);
-	start.set(60, 29);
-	start.set(62, 30);
+	start.set(60, 30);
+	start.set(62, 31);
 	start.set(61, 21);
 	start.set(33, 22);
 	start.set(124, 24);
-	start.set(43, 31);
-	start.set(47, 26);
-	start.set(37, 27);
+	start.set(43, 26);
+	start.set(45, 27);
+	start.set(47, 28);
+	start.set(37, 29);
 		start.set(Buffer::EoF, -1);
 	keywords.set(L"SELECT", 7);
 	keywords.set(L"OR", 10);
@@ -714,7 +714,6 @@ Token* Scanner::NextToken() {
 			else if (ch == L'.') {AddCh(); goto case_3;}
 			else {t->kind = 2; break;}
 		case 12:
-			case_12:
 			recEnd = pos; recKind = 2;
 			if ((ch >= L'0' && ch <= L'9')) {AddCh(); goto case_11;}
 			else if (ch == L'x') {AddCh(); goto case_1;}
@@ -754,28 +753,22 @@ Token* Scanner::NextToken() {
 			case_25:
 			{t->kind = 32; break;}
 		case 26:
-			{t->kind = 35; break;}
+			{t->kind = 33; break;}
 		case 27:
-			{t->kind = 36; break;}
+			{t->kind = 34; break;}
 		case 28:
-			recEnd = pos; recKind = 34;
-			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_11;}
-			else if (ch == L'0') {AddCh(); goto case_12;}
-			else {t->kind = 34; break;}
+			{t->kind = 35; break;}
 		case 29:
+			{t->kind = 36; break;}
+		case 30:
 			recEnd = pos; recKind = 29;
 			if (ch == L'>') {AddCh(); goto case_18;}
 			else if (ch == L'=') {AddCh(); goto case_19;}
 			else {t->kind = 29; break;}
-		case 30:
+		case 31:
 			recEnd = pos; recKind = 30;
 			if (ch == L'=') {AddCh(); goto case_20;}
 			else {t->kind = 30; break;}
-		case 31:
-			recEnd = pos; recKind = 33;
-			if ((ch >= L'1' && ch <= L'9')) {AddCh(); goto case_11;}
-			else if (ch == L'0') {AddCh(); goto case_12;}
-			else {t->kind = 33; break;}
 
 	}
 	AppendVal(t);

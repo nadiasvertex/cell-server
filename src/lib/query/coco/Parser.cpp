@@ -352,10 +352,8 @@ void Parser::Factor(select::expr *&e) {
 }
 
 void Parser::Term(select::expr *&e) {
-		if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
-			select::value_expr *v;                     
-			Value(v);
-			e = v;                                     
+		if (StartOf(6)) {
+			Value(e);
 		} else if (la->kind == 7 /* "SELECT" */ || la->kind == 14 /* "(" */) {
 			if (la->kind == 14 /* "(" */) {
 				Get();
@@ -365,15 +363,33 @@ void Parser::Term(select::expr *&e) {
 				Select();
 				e = new select::sub_select_expr(
 				          sq_stack.top()
-				 ); sq_stack.pop();                         
+				 ); sq_stack.pop();                       
 			}
 		} else SynErr(45);
 }
 
-void Parser::Value(select::value_expr *&v) {
+void Parser::Value(select::expr *&v) {
 		select::numeric_expr *nv; 
+		bool negate = false;                       
+		if (la->kind == 33 /* "+" */ || la->kind == 34 /* "-" */) {
+			if (la->kind == 33 /* "+" */) {
+				Get();
+			} else {
+				Get();
+				negate = true;                             
+			}
+		}
 		Numeric(nv);
-		v = nv;                   
+		if (negate)
+		{
+		 v = new select::unary_expr(
+		    L"NEG", nv
+		 );
+		}
+		else
+		{
+		 v = nv;
+		}                                          
 }
 
 void Parser::Numeric(select::numeric_expr *&nv) {
@@ -505,13 +521,14 @@ bool Parser::StartOf(int s) {
 	const bool T = true;
 	const bool x = false;
 
-	static bool set[6][39] = {
+	static bool set[7][39] = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,T,T, x,x,x,T, x,x,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,T,T, x,x,x,T, x,x,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,x, x,x,x},
+		{x,T,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,T, x,T,T,T, T,T,T,T, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,T,T,T, x,x,x,x, x,x,x},
-		{x,T,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
+		{x,T,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,T,T,x, x,x,x},
+		{x,T,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,x, x,x,x}
 	};
 
 

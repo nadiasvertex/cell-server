@@ -36,9 +36,9 @@ quoted_char = ANY - '"' - new_line. /* the set of all characters available for
  
 TOKENS
 
-hex_integer = ['+'|'-'] "0x" hex_digit {hex_digit}.
-integer     = ['+'|'-'] digit {digit}.
-decimal     = ['+'|'-'] digit {digit} '.' {digit} ['E' ['+'|'-'] digit {digit}].
+hex_integer = "0x" hex_digit {hex_digit}.
+integer     = digit {digit}.
+decimal     = digit {digit} '.' {digit} ['E' ['+'|'-'] digit {digit}].
 name        = letter {letter | digit | '_'}.
 quoted_name = '"' quoted_char '"'.
 
@@ -204,18 +204,32 @@ Factor<select::expr *&e>       =
   }
 .
 
-Term<select::expr *&e>        =                  (. select::value_expr *v;                     .)
-  Value<v>                                       (. e = v;                                     .)
+Term<select::expr *&e>        =                  
+  Value<e>                                       
 | ( 
     '('  Expression<e> ')'           
     | Select                                     (. e = new select::sub_select_expr(
                                                                sq_stack.top()
-                                                      ); sq_stack.pop();                         .)
+                                                      ); sq_stack.pop();                       .)
   )
 .
 
-Value<select::value_expr *&v>       =            (. select::numeric_expr *nv; .)
-  Numeric<nv>                                    (. v = nv;                   .)
+Value<select::expr *&v>       =                  (. select::numeric_expr *nv; 
+                                                    bool negate = false;                       .)
+  [
+      '+' 
+    | '-'                                        (. negate = true;                             .)
+  ]
+  Numeric<nv>                                    (. if (negate)
+                                                    {
+                                                      v = new select::unary_expr(
+                                                         L"NEG", nv
+                                                      );
+                                                    }
+                                                    else
+                                                    {
+                                                      v = nv;
+                                                    }                                          .)
 .
 Numeric<select::numeric_expr *&nv>  = 
   decimal                                        (. nv = new select::numeric_expr(t->val, 10, true);  .)

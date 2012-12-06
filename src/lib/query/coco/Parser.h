@@ -117,7 +117,7 @@ public:
 	void Summand(select::expr *&e);
 	void Factor(select::expr *&e);
 	void Term(select::expr *&e);
-	void Value(select::value_expr *&v);
+	void Value(select::expr *&v);
 	void Numeric(select::numeric_expr *&nv);
 
 	void Parse();
