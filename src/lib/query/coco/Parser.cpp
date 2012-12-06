@@ -309,12 +309,12 @@ void Parser::ConditionRhs(select::expr_handle_type l, select::expr_handle_type &
 			     L"AND",
 			     select::expr_handle_type(
 			        new select::binary_expr(
-			              type::BOOL, L">=", e, mi
+			              type::BOOL, L">=", l, mi
 			        )
 			     ),
 			     select::expr_handle_type(
 			        new select::binary_expr(
-			           type::BOOL, L"<=", e, ma
+			           type::BOOL, L"<=", l, ma
 			        )
 			     )
 			  )
