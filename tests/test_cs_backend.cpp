@@ -29,17 +29,20 @@ TEST(CsBackendTest, CanParseSelectOne)
    ASSERT_TRUE(b.generate());
 }
 
-/*
+
 TEST(CsBackendTest, CanParseSelectHexOne)
 {
    using namespace cell::query;
    
    std::string query("SELECT 0x1;");
    sql_parser p(query);
+   cs_backend b(p);
    
    ASSERT_EQ(0, p.parse());
+   ASSERT_TRUE(b.generate());
 }
 
+/*
 TEST(CsBackendTest, CanParseSelectFloatOne)
 {
    using namespace cell::query;
@@ -130,6 +133,8 @@ TEST(CsBackendTest, CanParseSelectComplexLiteralExpr)
    
    ASSERT_EQ(0, p.parse());
 }
+*/
+
 
 TEST(CsBackendTest, CanParseSelectMultiExpr)
 {
@@ -137,10 +142,13 @@ TEST(CsBackendTest, CanParseSelectMultiExpr)
    
    std::string query("SELECT 100*2, 50*4;");
    sql_parser p(query);
+   cs_backend b(p);
    
    ASSERT_EQ(0, p.parse());
+   ASSERT_TRUE(b.generate());
 }
 
+/*
 TEST(CsBackendTest, CanParseSelectBooleanExpr)
 {
    using namespace cell::query;
@@ -159,7 +167,7 @@ TEST(CsBackendTest, CanParseSelectComplexBooleanExpr)
    sql_parser p(query);
    
    ASSERT_EQ(0, p.parse());
-}
+}*/
 
 TEST(CsBackendTest, CanParseSelectBetweenExpr)
 {
@@ -167,10 +175,13 @@ TEST(CsBackendTest, CanParseSelectBetweenExpr)
    
    std::string query("SELECT 10 BETWEEN 1 AND 100;");
    sql_parser p(query);
+   cs_backend b(p);
    
    ASSERT_EQ(0, p.parse());
+   ASSERT_TRUE(b.generate());
 }
 
+/*
 TEST(CsBackendTest, CanParseSelectIsNull)
 {
    using namespace cell::query;

@@ -12,7 +12,7 @@ class cs_backend
    /** The stream to use to write the output to. */
    std::wstringstream s;
    
-   
+   void generate_type(const sql::type& t);
    bool generate_query(sql_parser::query_handle_type &q);
    bool generate_select(sql::select *sq);
    bool generate_expression(sql::select::expr_handle_type &e);

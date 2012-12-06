@@ -39,15 +39,67 @@ cs_backend::~cs_backend()
    std::wcout << s.str();
 }
 
+void 
+cs_backend::generate_type(const sql::type& t)
+{
+   switch(t)
+   {
+      case sql::type::BOOL:
+         s << L"bool";
+         break;
+         
+      case sql::type::TINYINT:
+         s << L"char";
+         break;
+         
+      case sql::type::SMALLINT:
+         s << L"short";
+         break;
+         
+      case sql::type::INT:
+         s << L"int";
+         break;
+         
+      case sql::type::BIGINT:
+         s << L"long";
+         break;
+         
+      case sql::type::FLOAT:
+         s << L"float";
+         break;
+         
+      case sql::type::DOUBLE:
+         s << L"double";
+         break;
+         
+      case sql::type::VARCHAR:
+         s << L"string";
+         break;
+   }
+}
+
 bool 
 cs_backend::generate_binary_expr(sql::select::binary_expr *b)
 {
    generate_expression(b->left);
    
-   s << L" "
-     << b->op;
+   s << L" ";
+   
+   if (b->op == L"AND")
+   {
+      s << L"&&";
+   } else if (b->op == L"OR")
+   {
+      s << L"||";
+   }
+   else
+   {
+      s << b->op;
+   }
    
    generate_expression(b->right);
+   
+   return true;
 }
 
 bool 
@@ -57,6 +109,8 @@ cs_backend::generate_unary_expr(sql::select::unary_expr *u)
      << u->op;
    
    generate_expression(u->child);
+   
+   return true;
 }
 
 bool 
@@ -64,6 +118,8 @@ cs_backend::generate_value_expr(sql::select::value_expr *v)
 {
    s << L" " 
      << v->value;
+     
+   return true;
 }
 
 bool
@@ -75,17 +131,29 @@ cs_backend::generate_expression(sql::select::expr_handle_type &e)
             auto *b = dynamic_cast<sql::select::binary_expr *>(e.get());
             if (b==nullptr)
             {
-               generate_unary_expr(dynamic_cast<sql::select::unary_expr *>(e.get()));
+               if (generate_unary_expr(dynamic_cast<sql::select::unary_expr *>(e.get())))
+               {
+                  return false;
+               }  
             }
             else
             {
-               generate_binary_expr(b);
+               if (generate_binary_expr(b)==false)
+               {
+                  return false;
+               }
             }
          } break;
          
          case sql::select::expr::kind::VALUE:
-            generate_value_expr(dynamic_cast<sql::select::value_expr *>(e.get()));
+            if (generate_value_expr(dynamic_cast<sql::select::value_expr *>(e.get()))==false)
+            {
+               return false;
+            }
          break;
+         
+         default:
+            return false;
       }      
       
       return true;
@@ -100,16 +168,18 @@ cs_backend::generate_select(sql::select *sq)
    auto se_count = sq->count_select_expressions();
    for(auto i = 0; i< se_count; ++i)
    {
+      auto se = sq->select_expression(i);
+      
       cb.indent();
-      s << L"some_type select_expr_"
+      generate_type(se->t);
+      s << L" select_expr_"
         << i
         << L"() ";
         
       block seb(s,2);
       seb.indent();
       s << L"return ";
-      
-      auto se = sq->select_expression(i);
+            
       if (generate_expression(se)==false)
       {
          return false;
