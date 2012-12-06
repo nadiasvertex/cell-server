@@ -98,96 +98,54 @@ void Parser::SQL() {
 
 void Parser::Select() {
 		Expect(7 /* "SELECT" */);
-
-#line 54 "src\lib\query\coco\sql.atg"
 		sq = new sql::select(); 
 		select::expr *e = nullptr;    
-		SelectExpr(
-#line 57 "src\lib\query\coco\sql.atg"
-e);
-
-#line 57 "src\lib\query\coco\sql.atg"
+		SelectExpr(e);
 		sq->add_select_expression(e); 
 		while (la->kind == 8 /* "," */) {
 			Get();
-			SelectExpr(
-#line 58 "src\lib\query\coco\sql.atg"
-e);
-
-#line 58 "src\lib\query\coco\sql.atg"
+			SelectExpr(e);
 			sq->add_select_expression(e); 
 		}
 }
 
-void Parser::SelectExpr(
-#line 62 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
+void Parser::SelectExpr(select::expr *&e) {
 		if (la->kind == 9 /* "*" */) {
 			Get();
 		} else if (StartOf(1)) {
-			Expression(
-#line 63 "src\lib\query\coco\sql.atg"
-e);
+			Expression(e);
 		} else SynErr(38);
 }
 
-void Parser::Expression(
-#line 67 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
-		AndCondition(
-#line 68 "src\lib\query\coco\sql.atg"
-e);
+void Parser::Expression(select::expr *&e) {
+		AndCondition(e);
 		while (la->kind == 10 /* "OR" */) {
 			Get();
-
-#line 70 "src\lib\query\coco\sql.atg"
 			select::expr *r;                           
-			AndCondition(
-#line 71 "src\lib\query\coco\sql.atg"
-r);
-
-#line 71 "src\lib\query\coco\sql.atg"
+			AndCondition(r);
 			e = new select::binary_expr(L"OR", e, r);  
 		}
 }
 
-void Parser::AndCondition(
-#line 75 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
-		Condition(
-#line 76 "src\lib\query\coco\sql.atg"
-e);
+void Parser::AndCondition(select::expr *&e) {
+		Condition(e);
 		while (la->kind == 11 /* "AND" */) {
 			Get();
-
-#line 78 "src\lib\query\coco\sql.atg"
 			select::expr *r;                          
-			Condition(
-#line 79 "src\lib\query\coco\sql.atg"
-r);
-
-#line 79 "src\lib\query\coco\sql.atg"
+			Condition(r);
 			e = new select::binary_expr(L"AND", e, r);
 		}
 }
 
-void Parser::Condition(
-#line 82 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
+void Parser::Condition(select::expr *&e) {
 		if (StartOf(2)) {
-			Operand(
-#line 83 "src\lib\query\coco\sql.atg"
-e);
+			Operand(e);
 			while (StartOf(3)) {
-				ConditionRhs();
+				ConditionRhs(e);
 			}
 		} else if (la->kind == 12 /* "NOT" */) {
 			Get();
-			Condition(
-#line 84 "src\lib\query\coco\sql.atg"
-e);
-
-#line 84 "src\lib\query\coco\sql.atg"
+			Condition(e);
 			e = new select::unary_expr(L"NOT", e); 
 		} else if (la->kind == 13 /* "EXISTS" */) {
 			Get();
@@ -197,36 +155,21 @@ e);
 		} else SynErr(39);
 }
 
-void Parser::Operand(
-#line 97 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
-		Summand(
-#line 98 "src\lib\query\coco\sql.atg"
-e);
+void Parser::Operand(select::expr *&e) {
+		Summand(e);
 		while (la->kind == 32 /* "||" */) {
 			Get();
-
-#line 100 "src\lib\query\coco\sql.atg"
 			select::expr *r;                          
-			Summand(
-#line 101 "src\lib\query\coco\sql.atg"
-r);
-
-#line 101 "src\lib\query\coco\sql.atg"
+			Summand(r);
 			e = new select::binary_expr(L"||", e, r); 
 		}
 }
 
-void Parser::ConditionRhs() {
+void Parser::ConditionRhs(select::expr *&e) {
 		if (StartOf(4)) {
-
-#line 88 "src\lib\query\coco\sql.atg"
-			select::expr *e;                          
 			Compare();
 			if (StartOf(2)) {
-				Operand(
-#line 89 "src\lib\query\coco\sql.atg"
-e);
+				Operand(e);
 			} else if (la->kind == 16 /* "ALL" */ || la->kind == 17 /* "ANY" */ || la->kind == 18 /* "SOME" */) {
 				if (la->kind == 16 /* "ALL" */) {
 					Get();
@@ -251,32 +194,22 @@ e);
 					Get();
 					Expect(22 /* "FROM" */);
 				}
-				Operand(
-#line 90 "src\lib\query\coco\sql.atg"
-e);
+				Operand(e);
 			} else SynErr(41);
 		} else if (la->kind == 23 /* "BETWEEN" */) {
 			Get();
-			Operand(
-#line 91 "src\lib\query\coco\sql.atg"
-e);
+			Operand(e);
 			Expect(11 /* "AND" */);
-			Operand(
-#line 91 "src\lib\query\coco\sql.atg"
-e);
+			Operand(e);
 			Expect(24 /* "IN" */);
 			Expect(14 /* "(" */);
 			if (la->kind == 7 /* "SELECT" */) {
 				Select();
 			} else if (StartOf(1)) {
-				Expression(
-#line 92 "src\lib\query\coco\sql.atg"
-e);
+				Expression(e);
 				while (la->kind == 8 /* "," */) {
 					Get();
-					Expression(
-#line 92 "src\lib\query\coco\sql.atg"
-e);
+					Expression(e);
 				}
 			} else SynErr(42);
 			Expect(15 /* ")" */);
@@ -317,36 +250,22 @@ void Parser::Compare() {
 		}
 }
 
-void Parser::Summand(
-#line 105 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
-		Factor(
-#line 106 "src\lib\query\coco\sql.atg"
-e);
+void Parser::Summand(select::expr *&e) {
+		Factor(e);
 		while (la->kind == 33 /* "+" */ || la->kind == 34 /* "-" */) {
 			if (la->kind == 33 /* "+" */) {
 				Get();
 			} else {
 				Get();
 			}
-
-#line 108 "src\lib\query\coco\sql.atg"
-			select::expr *r; std::wstring op(t.val);  
-			Factor(
-#line 109 "src\lib\query\coco\sql.atg"
-r);
-
-#line 109 "src\lib\query\coco\sql.atg"
+			select::expr *r; std::wstring op(t->val);  
+			Factor(r);
 			e = new select::binary_expr(op, e, r);    
 		}
 }
 
-void Parser::Factor(
-#line 113 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
-		Term(
-#line 114 "src\lib\query\coco\sql.atg"
-e);
+void Parser::Factor(select::expr *&e) {
+		Term(e);
 		while (la->kind == 9 /* "*" */ || la->kind == 35 /* "/" */ || la->kind == 36 /* "%" */) {
 			if (la->kind == 9 /* "*" */) {
 				Get();
@@ -355,37 +274,21 @@ e);
 			} else {
 				Get();
 			}
-
-#line 116 "src\lib\query\coco\sql.atg"
-			select::expr *r; std::wstring op(t.val);  
-			Term(
-#line 117 "src\lib\query\coco\sql.atg"
-r);
-
-#line 117 "src\lib\query\coco\sql.atg"
+			select::expr *r; std::wstring op(t->val);  
+			Term(r);
 			e = new select::binary_expr(op, e, r);    
 		}
 }
 
-void Parser::Term(
-#line 121 "src\lib\query\coco\sql.atg"
-select::expr *&e) {
+void Parser::Term(select::expr *&e) {
 		if (la->kind == _hex_integer || la->kind == _integer || la->kind == _decimal) {
-
-#line 121 "src\lib\query\coco\sql.atg"
 			select::value_expr *v; 
-			Value(
-#line 122 "src\lib\query\coco\sql.atg"
-v);
-
-#line 122 "src\lib\query\coco\sql.atg"
+			Value(v);
 			e = v;                 
 		} else if (la->kind == 7 /* "SELECT" */ || la->kind == 14 /* "(" */) {
 			if (la->kind == 14 /* "(" */) {
 				Get();
-				Expression(
-#line 124 "src\lib\query\coco\sql.atg"
-e);
+				Expression(e);
 				Expect(15 /* ")" */);
 			} else {
 				Select();
@@ -393,37 +296,21 @@ e);
 		} else SynErr(45);
 }
 
-void Parser::Value(
-#line 129 "src\lib\query\coco\sql.atg"
-select::value_expr *&v) {
-
-#line 129 "src\lib\query\coco\sql.atg"
+void Parser::Value(select::value_expr *&v) {
 		select::numeric_expr *nv; 
-		Numeric(
-#line 130 "src\lib\query\coco\sql.atg"
-nv);
-
-#line 130 "src\lib\query\coco\sql.atg"
+		Numeric(nv);
 		v = nv;                   
 }
 
-void Parser::Numeric(
-#line 132 "src\lib\query\coco\sql.atg"
-select::numeric_expr *&nv) {
+void Parser::Numeric(select::numeric_expr *&nv) {
 		if (la->kind == _decimal) {
 			Get();
-
-#line 133 "src\lib\query\coco\sql.atg"
 			nv = new select::numeric_expr(t->val, 10, true);  
 		} else if (la->kind == _hex_integer) {
 			Get();
-
-#line 134 "src\lib\query\coco\sql.atg"
 			nv = new select::numeric_expr(t->val, 16, false); 
 		} else if (la->kind == _integer) {
 			Get();
-
-#line 135 "src\lib\query\coco\sql.atg"
 			nv = new select::numeric_expr(t->val, 10, false); 
 		} else SynErr(46);
 }

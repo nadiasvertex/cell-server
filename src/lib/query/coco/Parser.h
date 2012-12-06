@@ -30,8 +30,6 @@ Coco/R itself) does not fall under the GNU General Public License.
 #if !defined(cell__query__sql_COCO_PARSER_H__)
 #define cell__query__sql_COCO_PARSER_H__
 
-
-#line 1 "src\lib\query\coco\sql.atg"
 #include <vector>
 #include <query/cpp/sql_ast.h>
 
@@ -86,8 +84,6 @@ public:
 	Token *t;			// last recognized token
 	Token *la;			// lookahead token
 
-
-#line 6 "src\lib\query\coco\sql.atg"
 public:
    std::vector<query*> queries;
    
@@ -109,38 +105,18 @@ public:
 
 	void SQL();
 	void Select();
-	void SelectExpr(
-#line 62 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void Expression(
-#line 67 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void AndCondition(
-#line 75 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void Condition(
-#line 82 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void Operand(
-#line 97 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void ConditionRhs();
+	void SelectExpr(select::expr *&e);
+	void Expression(select::expr *&e);
+	void AndCondition(select::expr *&e);
+	void Condition(select::expr *&e);
+	void Operand(select::expr *&e);
+	void ConditionRhs(select::expr *&e);
 	void Compare();
-	void Summand(
-#line 105 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void Factor(
-#line 113 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void Term(
-#line 121 "src\lib\query\coco\sql.atg"
-select::expr *&e);
-	void Value(
-#line 129 "src\lib\query\coco\sql.atg"
-select::value_expr *&v);
-	void Numeric(
-#line 132 "src\lib\query\coco\sql.atg"
-select::numeric_expr *&nv);
+	void Summand(select::expr *&e);
+	void Factor(select::expr *&e);
+	void Term(select::expr *&e);
+	void Value(select::value_expr *&v);
+	void Numeric(select::numeric_expr *&nv);
 
 	void Parse();
 

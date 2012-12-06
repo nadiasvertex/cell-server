@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 namespace cell {
 namespace query {
@@ -50,7 +51,7 @@ class select : public query
    {
    public:
       select *ss;
-      sub_select_expr(const type& _t);
+      sub_select_expr(select *_ss);
    };
    
    class value_expr : public expr
