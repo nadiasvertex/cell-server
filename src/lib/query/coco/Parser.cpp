@@ -145,7 +145,9 @@ void Parser::Condition(select::expr *&e) {
 		if (StartOf(2)) {
 			Operand(e);
 			while (StartOf(3)) {
-				ConditionRhs(e);
+				select::expr *r;                           
+				ConditionRhs(e, r);
+				e = r;                                     
 			}
 		} else if (la->kind == 12 /* "NOT" */) {
 			Get();
@@ -155,6 +157,11 @@ void Parser::Condition(select::expr *&e) {
 			Get();
 			Expect(14 /* "(" */);
 			Select();
+			e = new select::unary_expr(L"EXISTS", 
+			       new select::sub_select_expr(
+			         sq_stack.top()
+			       )
+			); sq_stack.pop();                       
 			Expect(15 /* ")" */);
 		} else SynErr(39);
 }
@@ -169,13 +176,13 @@ void Parser::Operand(select::expr *&e) {
 		}
 }
 
-void Parser::ConditionRhs(select::expr *&e) {
+void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 		if (StartOf(4)) {
 			Compare();
 			std::wstring op(t->val);                  
 			if (StartOf(2)) {
 				Operand(e);
-				e = new select::unary_expr(op, e);        
+				e = new select::binary_expr(op, l, e);    
 			} else if (la->kind == 16 /* "ALL" */ || la->kind == 17 /* "ANY" */ || la->kind == 18 /* "SOME" */) {
 				if (la->kind == 16 /* "ALL" */) {
 					Get();
@@ -187,16 +194,30 @@ void Parser::ConditionRhs(select::expr *&e) {
 				std::wstring query_op(t->val);            
 				Expect(14 /* "(" */);
 				Select();
-				
+				e = new select::unary_expr(op, 
+				        new select::sub_select_expr(
+				          sq_stack.top()
+				        )
+				); sq_stack.pop();                       
 				Expect(15 /* ")" */);
 			} else SynErr(40);
 		} else if (la->kind == 19 /* "IS" */) {
 			Get();
+			bool is_not = false;                      
 			if (la->kind == 12 /* "NOT" */) {
 				Get();
+				is_not = true;                            
 			}
 			if (la->kind == 20 /* "NULL" */) {
 				Get();
+				e = new select::binary_expr(
+				         L"IS", 
+				         l, new select::null_expr()
+				);                                        
+				if (is_not)
+				{
+				e = new select::unary_expr(L"NOT", e);
+				}                                        
 			} else if (StartOf(5)) {
 				if (la->kind == 21 /* "DISTINCT" */) {
 					Get();

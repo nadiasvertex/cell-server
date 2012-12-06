@@ -112,7 +112,7 @@ public:
 	void AndCondition(select::expr *&e);
 	void Condition(select::expr *&e);
 	void Operand(select::expr *&e);
-	void ConditionRhs(select::expr *&e);
+	void ConditionRhs(select::expr *l, select::expr *&e);
 	void Compare();
 	void Summand(select::expr *&e);
 	void Factor(select::expr *&e);

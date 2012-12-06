@@ -18,7 +18,8 @@ enum class type
    FLOAT,
    DOUBLE,
    DECIMAL,
-   VARCHAR
+   VARCHAR,
+   NULL_TYPE
 };
 
 /**
@@ -35,6 +36,7 @@ class select : public query
    public:
       enum class kind
       {
+         NULL_VALUE,
          VALUE,
          COLUMN_NAME,
          OP,
@@ -65,6 +67,12 @@ class select : public query
    {   
    public:
       numeric_expr(const std::wstring& _v, int base, bool decimal);
+   };
+   
+   class null_expr : public expr
+   {
+   public:
+      null_expr():expr(expr::kind::NULL_VALUE, type::NULL_TYPE) {};
    };
    
    class unary_expr : public expr
