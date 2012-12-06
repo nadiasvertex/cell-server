@@ -30,6 +30,19 @@ sql::select::value_expr* out;                                  \
    ASSERT_EQ(expected_type, out->t);                           \
 }
 
+#define CHECK_SUBSELECT(out1, out2, n)                         \
+sql::select::sub_select_expr* out1;                            \
+sql::select* out2;                                             \
+{                                                              \
+   ASSERT_TRUE(nullptr!=n);                                    \
+   ASSERT_EQ(sql::select::expr::kind::SUB_SELECT, n->k);       \
+                                                               \
+   out1 = dynamic_cast<sql::select::sub_select_expr*>(n);      \
+   ASSERT_TRUE(out1!=nullptr);                                 \
+   out2 = out1->ss;                                            \
+   ASSERT_TRUE(out2!=nullptr);                                 \   
+}
+
 #define CHECK_SELECT_QUERY(out, n)                             \
 sql::select *out;                                              \
 {                                                              \
@@ -41,7 +54,7 @@ sql::select *out;                                              \
 
 #define CHECK_SELECT_EXPRESSION(out, n)                        \
    ASSERT_EQ(1, n->count_select_expressions());                \
-   auto *out = sq->select_expression(0).get();
+   auto *out = n->select_expression(0).get();
 
 TEST(SqlAstTest, SimpleLiteral)
 {
@@ -140,4 +153,23 @@ TEST(SqlAstTest, BetweenExpression)
    CHECK_VALUE(r2, L"1", sql::type::TINYINT, l1->right.get());
    CHECK_VALUE(l3, L"5", sql::type::TINYINT, r1->left.get());
    CHECK_VALUE(r3, L"10", sql::type::TINYINT, r1->right.get());   
+}
+
+TEST(SqlAstTest, Subselect)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT (SELECT 1);");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+   ASSERT_EQ(1, p.count_queries());
+   
+   auto q = p.query(0);
+   CHECK_SELECT_QUERY(sq, q)
+   CHECK_SELECT_EXPRESSION(se, sq);
+   
+   CHECK_SUBSELECT(sse, ss, se);   
+   CHECK_SELECT_EXPRESSION(se2, ss);
+   CHECK_VALUE(v, L"1", sql::type::TINYINT, se2);
 }
