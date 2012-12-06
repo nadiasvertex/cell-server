@@ -178,7 +178,7 @@ void Parser::Operand(select::expr *&e) {
 		Summand(e);
 		while (la->kind == 32 /* "||" */) {
 			Get();
-			select::expr *r;                          
+			select::expr *r = nullptr;                
 			Summand(r);
 			e = new select::binary_expr(L"||", e, r); 
 		}
@@ -271,17 +271,25 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 			              type::BOOL, L"<=", e, ma
 			        )
 			); 
-			                                        
+			                                         
 		} else if (la->kind == 24 /* "IN" */) {
 			Get();
 			Expect(14 /* "(" */);
 			if (la->kind == 7 /* "SELECT" */) {
 				Select();
+				e = new select::sub_select_expr(
+				          sq_stack.top()
+				); sq_stack.pop();                        
 			} else if (StartOf(1)) {
 				Expression(e);
+				auto *le = new select::list_expr();
+				le->add_expression(e);
+				e = le;                                   
 				while (la->kind == 8 /* "," */) {
 					Get();
-					Expression(e);
+					select::expr* en = nullptr;               
+					Expression(en);
+					le->add_expression(en);                   
 				}
 			} else SynErr(42);
 			Expect(15 /* ")" */);

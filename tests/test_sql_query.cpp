@@ -23,6 +23,46 @@ TEST(SqlQueryTest, CanParseSelectOne)
    ASSERT_EQ(0, p.parse());
 }
 
+TEST(SqlQueryTest, CanParseSelectHexOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 0x1;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectFloatOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 1.0;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectFloatZeroPointOne)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 0.1;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectFloatZeroPointOneEee)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 0.1E+10;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
 TEST(SqlQueryTest, CanParseSelectOneCommaTwo)
 {
    using namespace cell::query;
@@ -159,6 +199,36 @@ TEST(SqlQueryTest, CanParseSelectIsNotDistinctFrom)
    using namespace cell::query;
    
    std::string query("SELECT 1 IS NOT DISTINCT FROM 2;");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectIn)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 1 IN (1,2,3,4,5);");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectInSelect)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT 1 IN (SELECT 1);");
+   sql_parser p(query);
+   
+   ASSERT_EQ(0, p.parse());
+}
+
+TEST(SqlQueryTest, CanParseSelectSubSelect)
+{
+   using namespace cell::query;
+   
+   std::string query("SELECT (SELECT 1);");
    sql_parser p(query);
    
    ASSERT_EQ(0, p.parse());

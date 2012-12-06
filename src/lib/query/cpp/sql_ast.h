@@ -41,6 +41,7 @@ class select : public query
          VALUE,
          COLUMN_NAME,
          OP,
+         LIST,
          SUB_SELECT
       };
       
@@ -74,6 +75,14 @@ class select : public query
    {
    public:
       null_expr():expr(expr::kind::NULL_VALUE, type::NULL_TYPE) {};
+   };
+   
+   class list_expr : public expr
+   {
+   public:
+     std::vector<expr*> values;
+     list_expr():expr(expr::kind::LIST, type::INT) {};
+     void add_expression(expr* e) { values.push_back(e); }
    };
    
    class unary_expr : public expr

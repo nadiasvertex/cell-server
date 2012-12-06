@@ -173,9 +173,24 @@ ConditionRhs<select::expr *l, select::expr *&e> =
                                                                    type::BOOL, L"<=", e, ma
                                                              )
                                                     ); 
-                                                                                             .)      
+                                                                                              .)      
    )
- | ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
+ | ("IN" 
+    '(' 
+       (Select                                   (. e = new select::sub_select_expr(
+                                                               sq_stack.top()
+                                                    ); sq_stack.pop();                        .)
+                                                    
+       | Expression<e>                           (. auto *le = new select::list_expr();
+                                                    le->add_expression(e);
+                                                    e = le;                                   .)
+          {
+            ','                                  (. select::expr* en = nullptr;               .)
+            Expression<en>                       (. le->add_expression(en);                   .)         
+          }
+       ) 
+    ')'
+   )
 .
 
 Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
@@ -183,7 +198,7 @@ Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
 Operand<select::expr *&e>      = 
   Summand<e> 
   {
-   "||"                                          (. select::expr *r;                          .)
+   "||"                                          (. select::expr *r = nullptr;                .)
    Summand<r>                                    (. e = new select::binary_expr(L"||", e, r); .)
   }
 .
