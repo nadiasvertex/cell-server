@@ -175,7 +175,7 @@ ConditionRhs<select::expr *l, select::expr *&e> =
                                                     ); 
                                                                                              .)      
    )
-   ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
+ | ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
 .
 
 Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
