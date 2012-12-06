@@ -5,10 +5,6 @@ namespace cell {
 namespace query {
 namespace sql {
 
-class query
-{
-};
-
 enum class type
 {
    BOOL,
@@ -21,6 +17,25 @@ enum class type
    DECIMAL,
    VARCHAR,
    NULL_TYPE
+};
+
+class query
+{
+public:
+   enum class kind
+   {
+      SELECT,
+      UPDATE,
+      INSERT,
+      DELETE,
+      CREATE,
+      ALTER
+   };
+   
+   kind k;
+   
+   query(const kind& _k):k(_k) {};
+   virtual ~query() {};
 };
 
 /**
@@ -56,6 +71,7 @@ class select : public query
    public:
       select *ss;
       sub_select_expr(select *_ss);
+      virtual ~sub_select_expr();
    };
    
    class value_expr : public expr
@@ -82,6 +98,7 @@ class select : public query
    public:
      std::vector<expr*> values;
      list_expr():expr(expr::kind::LIST, type::INT) {};
+     virtual ~list_expr() { for(const auto* v : values) { delete v; } }
      void add_expression(expr* e) { values.push_back(e); }
    };
    
@@ -92,6 +109,7 @@ class select : public query
       std::wstring op;
       unary_expr(const std::wstring& _op, expr* c);
       unary_expr(const type& _t, const std::wstring& _op, expr* c);
+      virtual ~unary_expr();
    };
    
    class binary_expr : public expr
@@ -101,6 +119,7 @@ class select : public query
       std::wstring op;
       binary_expr(const std::wstring& _op, expr* l, expr* r);
       binary_expr(const type& _t, const std::wstring& _op, expr* l, expr* r);
+      virtual ~binary_expr();
    };   
    
    //===--------------------------------------------------------------------------------===//
@@ -122,7 +141,7 @@ private:
    // select query API
    //===--------------------------------------------------------------------------------===//
 public:
-   select(select *_parent):parent(_parent) {}
+   select(select *_parent):query(query::kind::SELECT), parent(_parent) {}
    virtual ~select();
 
    /** Find out how many select expressions are in this query. */

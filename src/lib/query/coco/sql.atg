@@ -1,3 +1,4 @@
+#include <memory>
 #include <stack>
 #include <vector>
 #include <query/cpp/sql_ast.h>
@@ -5,12 +6,14 @@
 COMPILER SQL
 
 public:
-   std::vector<query*> queries;
+   typedef std::shared_ptr<query> query_handle_type ;
+   typedef std::vector<query_handle_type> query_list_type;
+   query_list_type queries;
    
 private:   
    /** Holds our select queries. We may have nested sub selects, so we
     * need to be able to keep track of them. */
-   std::stack<select *> sq_stack;
+   std::stack<select*> sq_stack;
    
 public:
 
@@ -63,6 +66,13 @@ Select       = "SELECT"                          (. sq_stack.push(
               SelectExpr<e>                      (. sq_stack.top()->add_select_expression(e); .)                  
                {',' SelectExpr<e>                (. sq_stack.top()->add_select_expression(e); .)
                }
+               
+                                                 (. queries.push_back(
+                                                      query_handle_type(
+                                                         sq_stack.top()
+                                                      )
+                                                    );
+                                                    /*sq_stack.clear();*/                         .)
 .
              
 SelectExpr<select::expr *&e>   = '*' 
@@ -246,6 +256,7 @@ Value<select::expr *&v>       =                  (. select::numeric_expr *nv;
                                                       v = nv;
                                                     }                                          .)
 .
+
 Numeric<select::numeric_expr *&nv>  = 
   decimal                                        (. nv = new select::numeric_expr(t->val, 10, true);  .)
 | hex_integer                                    (. nv = new select::numeric_expr(t->val, 16, false); .)

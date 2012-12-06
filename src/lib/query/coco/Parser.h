@@ -30,6 +30,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 #if !defined(cell__query__sql_COCO_PARSER_H__)
 #define cell__query__sql_COCO_PARSER_H__
 
+#include <memory>
 #include <stack>
 #include <vector>
 #include <query/cpp/sql_ast.h>
@@ -86,12 +87,14 @@ public:
 	Token *la;			// lookahead token
 
 public:
-   std::vector<query*> queries;
+   typedef std::shared_ptr<query> query_handle_type ;
+   typedef std::vector<query_handle_type> query_list_type;
+   query_list_type queries;
    
 private:   
    /** Holds our select queries. We may have nested sub selects, so we
     * need to be able to keep track of them. */
-   std::stack<select *> sq_stack;
+   std::stack<select*> sq_stack;
    
 public:
 

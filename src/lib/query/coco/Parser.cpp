@@ -111,6 +111,12 @@ void Parser::Select() {
 			SelectExpr(e);
 			sq_stack.top()->add_select_expression(e); 
 		}
+		queries.push_back(
+		 query_handle_type(
+		    sq_stack.top()
+		 )
+		);
+		/*sq_stack.clear();*/                         
 }
 
 void Parser::SelectExpr(select::expr *&e) {

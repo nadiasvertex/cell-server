@@ -50,6 +50,14 @@ select::unary_expr::unary_expr(const std::wstring& _op, expr* c):
     unary_expr(c->t, _op, c)
 {}
 
+select::unary_expr::~unary_expr()
+{
+   if (child!=nullptr)
+   {
+      delete child;
+   }
+}
+
 select::binary_expr::binary_expr(const type& _t, const std::wstring& _op, expr* l, expr* r):
    expr(expr::kind::OP, _t), op(_op), left(l), right(r)
 {}
@@ -66,11 +74,32 @@ select::binary_expr::binary_expr(const std::wstring& _op, expr* l, expr* r):
    }
 }
 
+select::binary_expr::~binary_expr()
+{
+   if (left!=nullptr)
+   {
+      delete left;
+   }
+   
+   if (right!=nullptr)
+   {
+      delete right;
+   }
+}
+
 select::sub_select_expr::sub_select_expr(select* _ss):expr(kind::SUB_SELECT, type::INT), ss(_ss)
 {
    if (ss!=nullptr && ss->count_select_expressions() > 0)
    {
       t = ss->select_expression(0)->t;
+   }
+}
+
+select::sub_select_expr::~sub_select_expr()
+{
+   if (ss!=nullptr)
+   {
+      delete ss;
    }
 }
 

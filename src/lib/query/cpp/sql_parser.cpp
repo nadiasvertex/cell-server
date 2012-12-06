@@ -25,5 +25,17 @@ int sql_parser::parse()
    return p->errors->count;
 }
 
+sql_parser::size_type 
+sql_parser::count_queries()
+{
+   return p->queries.size();
+}
+   
+sql_parser::query_handle_type 
+sql_parser::query(size_type index)
+{
+   return p->queries[index];
+}
+
 } // end namespace query
 } // end namespace cell
