@@ -73,8 +73,11 @@ SelectExpr<select::expr *&e>   = '*'
 Expression<select::expr *&e>   = 
   AndCondition<e> 
   { 
-    "OR"                                         (. select::expr *r;                           .)
-    AndCondition<r>                              (. e = new select::binary_expr(L"OR", e, r);  .)   
+    "OR"                                         (. select::expr *r;                          .)
+    AndCondition<r>                              (. e = new select::binary_expr(
+                                                             type::BOOL, L"OR", e, r
+                                                    );  
+                                                                                              .)   
   }
 .
 
@@ -82,18 +85,23 @@ AndCondition<select::expr *&e> =
   Condition<e> 
   { 
    "AND"                                         (. select::expr *r;                          .)
-   Condition<r>                                  (. e = new select::binary_expr(L"AND", e, r);.)
+   Condition<r>                                  (. e = new select::binary_expr(
+                                                              type::BOOL, L"AND", e, r
+                                                    );                                        .)
   }
 .
 Condition<select::expr *&e>    = 
    Operand<e>  
-   {                                             (. select::expr *r;                           .)
-     ConditionRhs<e, r>                          (. e = r;                                     .)    
+   {                                             (. select::expr *r;                          .)
+     ConditionRhs<e, r>                          (. e = r;                                    .)    
    } 
- | "NOT" Condition<e>                            (. e = new select::unary_expr(L"NOT", e);    .)
+ | "NOT" Condition<e>                            (. e = new select::unary_expr(
+                                                             type::BOOL, L"NOT", e
+                                                    );                                        .)
  | "EXISTS" 
    '(' 
-       Select                                     (. e = new select::unary_expr(L"EXISTS", 
+       Select                                     (. e = new select::unary_expr(
+                                                             type::BOOL, L"EXISTS", 
                                                              new select::sub_select_expr(
                                                                sq_stack.top()
                                                              )
@@ -103,10 +111,13 @@ Condition<select::expr *&e>    =
 
 ConditionRhs<select::expr *l, select::expr *&e> =                 
    (Compare                                      (. std::wstring op(t->val);                  .)
-      (  Operand<e>                              (. e = new select::binary_expr(op, l, e);    .)
+      (  Operand<e>                              (. e = new select::binary_expr(
+                                                         type::BOOL, op, l, e
+                                                    );                                        .)
        | ("ALL" | "ANY" | "SOME")                (. std::wstring query_op(t->val);            .)  
          '('                                     
-            Select                               (. e = new select::unary_expr(op, 
+            Select                               (. e = new select::unary_expr(
+                                                             type::BOOL, op, 
                                                              new select::sub_select_expr(
                                                                sq_stack.top()
                                                              )
@@ -120,27 +131,27 @@ ConditionRhs<select::expr *l, select::expr *&e> =
      "NOT"                                       (. is_not = true;                            .)
     ] 
     ( "NULL"                                     (. e = new select::binary_expr(
+                                                              type::BOOL,
                                                               L"IS", 
                                                               l, new select::null_expr()
-                                                    );                                        
+                                                    );  
                                                     if (is_not)
                                                     {
-                                                     e = new select::unary_expr(L"NOT", e);
+                                                     e = new select::unary_expr(
+                                                               type::BOOL, L"NOT", e
+                                                     );
                                                     }                                        .)                     
      | [
          "DISTINCT" "FROM"                       (. distinct_from = true;                    .)
        ] 
        Operand<e>                                (.
                                                     e = new select::binary_expr(
+                                                              type::BOOL,
+                                                              distinct_from    ?
+                                                              L"DISTINCT_FROM" :
                                                               L"IS",
                                                               l, e
-                                                    );
-                                                    if (distinct_from)
-                                                    {
-                                                      e = new select::unary_expr(
-                                                              L"DISTINCT_FROM", e
-                                                      );
-                                                    }
+                                                    );                                                    
                                                     if (is_not)
                                                     {
                                                       e = new select::unary_expr(
@@ -150,7 +161,20 @@ ConditionRhs<select::expr *l, select::expr *&e> =
                                                                                              .)
      )
    )
- | ("BETWEEN" Operand<e> "AND" Operand<e>)
+ | ("BETWEEN"                                    (. select::expr *mi, *ma;                   .)
+     Operand<mi> "AND" Operand<ma>               (.
+                                                    e = new select::binary_expr(
+                                                             type::BOOL,
+                                                             L"AND",
+                                                             new select::binary_expr(
+                                                                   type::BOOL, L">=", e, mi
+                                                             ),
+                                                             new select::binary_expr(
+                                                                   type::BOOL, L"<=", e, ma
+                                                             )
+                                                    ); 
+                                                                                             .)      
+   )
    ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
 .
 

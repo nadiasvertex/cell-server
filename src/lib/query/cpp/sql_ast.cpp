@@ -42,12 +42,20 @@ select::numeric_expr::numeric_expr(const std::wstring& _v, int base, bool decima
    }
 }
 
+select::unary_expr::unary_expr(const type& _t, const std::wstring& _op, expr* c):
+   expr(expr::kind::OP, _t), op(_op), child(c)
+{}
+
 select::unary_expr::unary_expr(const std::wstring& _op, expr* c):
-    expr(expr::kind::OP, c->t), op(_op), child(c)
+    unary_expr(c->t, _op, c)
+{}
+
+select::binary_expr::binary_expr(const type& _t, const std::wstring& _op, expr* l, expr* r):
+   expr(expr::kind::OP, _t), op(_op), left(l), right(r)
 {}
 
 select::binary_expr::binary_expr(const std::wstring& _op, expr* l, expr* r):
-   expr(expr::kind::OP, l->t), op(_op), left(l), right(r) 
+   binary_expr(l->t, _op, l, r)
 {
    if (r->t > t)
    {

@@ -11,6 +11,7 @@ class query
 
 enum class type
 {
+   BOOL,
    TINYINT,
    SMALLINT,
    INT,
@@ -81,6 +82,7 @@ class select : public query
    public:
       std::wstring op;
       unary_expr(const std::wstring& _op, expr* c);
+      unary_expr(const type& _t, const std::wstring& _op, expr* c);
    };
    
    class binary_expr : public expr
@@ -89,6 +91,7 @@ class select : public query
    public:
       std::wstring op;
       binary_expr(const std::wstring& _op, expr* l, expr* r);
+      binary_expr(const type& _t, const std::wstring& _op, expr* l, expr* r);
    };   
    
    //===--------------------------------------------------------------------------------===//

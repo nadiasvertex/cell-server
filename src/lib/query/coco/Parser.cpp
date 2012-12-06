@@ -125,9 +125,12 @@ void Parser::Expression(select::expr *&e) {
 		AndCondition(e);
 		while (la->kind == 10 /* "OR" */) {
 			Get();
-			select::expr *r;                           
+			select::expr *r;                          
 			AndCondition(r);
-			e = new select::binary_expr(L"OR", e, r);  
+			e = new select::binary_expr(
+			        type::BOOL, L"OR", e, r
+			);  
+			                                         
 		}
 }
 
@@ -137,7 +140,9 @@ void Parser::AndCondition(select::expr *&e) {
 			Get();
 			select::expr *r;                          
 			Condition(r);
-			e = new select::binary_expr(L"AND", e, r);
+			e = new select::binary_expr(
+			         type::BOOL, L"AND", e, r
+			);                                        
 		}
 }
 
@@ -145,19 +150,22 @@ void Parser::Condition(select::expr *&e) {
 		if (StartOf(2)) {
 			Operand(e);
 			while (StartOf(3)) {
-				select::expr *r;                           
+				select::expr *r;                          
 				ConditionRhs(e, r);
-				e = r;                                     
+				e = r;                                    
 			}
 		} else if (la->kind == 12 /* "NOT" */) {
 			Get();
 			Condition(e);
-			e = new select::unary_expr(L"NOT", e);    
+			e = new select::unary_expr(
+			        type::BOOL, L"NOT", e
+			);                                        
 		} else if (la->kind == 13 /* "EXISTS" */) {
 			Get();
 			Expect(14 /* "(" */);
 			Select();
-			e = new select::unary_expr(L"EXISTS", 
+			e = new select::unary_expr(
+			       type::BOOL, L"EXISTS", 
 			       new select::sub_select_expr(
 			         sq_stack.top()
 			       )
@@ -182,7 +190,9 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 			std::wstring op(t->val);                  
 			if (StartOf(2)) {
 				Operand(e);
-				e = new select::binary_expr(op, l, e);    
+				e = new select::binary_expr(
+				    type::BOOL, op, l, e
+				);                                        
 			} else if (la->kind == 16 /* "ALL" */ || la->kind == 17 /* "ANY" */ || la->kind == 18 /* "SOME" */) {
 				if (la->kind == 16 /* "ALL" */) {
 					Get();
@@ -194,7 +204,8 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 				std::wstring query_op(t->val);            
 				Expect(14 /* "(" */);
 				Select();
-				e = new select::unary_expr(op, 
+				e = new select::unary_expr(
+				        type::BOOL, op, 
 				        new select::sub_select_expr(
 				          sq_stack.top()
 				        )
@@ -212,12 +223,15 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 			if (la->kind == 20 /* "NULL" */) {
 				Get();
 				e = new select::binary_expr(
+				         type::BOOL,
 				         L"IS", 
 				         l, new select::null_expr()
-				);                                        
+				);  
 				if (is_not)
 				{
-				e = new select::unary_expr(L"NOT", e);
+				e = new select::unary_expr(
+				          type::BOOL, L"NOT", e
+				);
 				}                                        
 			} else if (StartOf(5)) {
 				if (la->kind == 21 /* "DISTINCT" */) {
@@ -227,15 +241,12 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 				}
 				Operand(e);
 				e = new select::binary_expr(
+				         type::BOOL,
+				         distinct_from    ?
+				         L"DISTINCT_FROM" :
 				         L"IS",
 				         l, e
-				);
-				if (distinct_from)
-				{
-				 e = new select::unary_expr(
-				         L"DISTINCT_FROM", e
-				 );
-				}
+				);                                                    
 				if (is_not)
 				{
 				 e = new select::unary_expr(
@@ -246,9 +257,21 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 			} else SynErr(41);
 		} else if (la->kind == 23 /* "BETWEEN" */) {
 			Get();
-			Operand(e);
+			select::expr *mi, *ma;                   
+			Operand(mi);
 			Expect(11 /* "AND" */);
-			Operand(e);
+			Operand(ma);
+			e = new select::binary_expr(
+			        type::BOOL,
+			        L"AND",
+			        new select::binary_expr(
+			              type::BOOL, L">=", e, mi
+			        ),
+			        new select::binary_expr(
+			              type::BOOL, L"<=", e, ma
+			        )
+			); 
+			                                        
 			Expect(24 /* "IN" */);
 			Expect(14 /* "(" */);
 			if (la->kind == 7 /* "SELECT" */) {
