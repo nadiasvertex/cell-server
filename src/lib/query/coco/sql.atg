@@ -77,69 +77,86 @@ Select       = "SELECT"                          (. sq_stack.push(
                                                        sq_stack.size() > 0 ? sq_stack.top() : nullptr
                                                       )
                                                     ); 
-                                                    select::expr *e = nullptr;                .)
+                                                    
+                                                    select::expr_handle_type e;               .)
                                                     
               SelectExpr<e>                      (. sq_stack.top()->add_select_expression(e); .)                  
                {',' SelectExpr<e>                (. sq_stack.top()->add_select_expression(e); .)
                }
 .                                                 
              
-SelectExpr<select::expr *&e>   = '*' 
+SelectExpr<select::expr_handle_type &e>   = '*' 
                                  | Expression<e>
 .
 
 
-Expression<select::expr *&e>   = 
+Expression<select::expr_handle_type &e>   = 
   AndCondition<e> 
   { 
-    "OR"                                         (. select::expr *r;                          .)
-    AndCondition<r>                              (. e = new select::binary_expr(
+    "OR"                                         (. select::expr_handle_type r;                          .)
+    AndCondition<r>                              (. e = select::expr_handle_type(
+                                                            new select::binary_expr(
                                                              type::BOOL, L"OR", e, r
+                                                            )
                                                     );  
                                                                                               .)   
   }
 .
 
-AndCondition<select::expr *&e> = 
+AndCondition<select::expr_handle_type &e> = 
   Condition<e> 
   { 
-   "AND"                                         (. select::expr *r;                          .)
-   Condition<r>                                  (. e = new select::binary_expr(
+   "AND"                                         (. select::expr_handle_type r;                          .)
+   Condition<r>                                  (. e = select::expr_handle_type(
+                                                            new select::binary_expr(
                                                               type::BOOL, L"AND", e, r
+                                                            )
                                                     );                                        .)
   }
 .
-Condition<select::expr *&e>    = 
+Condition<select::expr_handle_type &e>    = 
    Operand<e>  
-   {                                             (. select::expr *r;                          .)
+   {                                             (. select::expr_handle_type r;                          .)
      ConditionRhs<e, r>                          (. e = r;                                    .)    
    } 
- | "NOT" Condition<e>                            (. e = new select::unary_expr(
+ | "NOT" Condition<e>                            (. e = select::expr_handle_type(
+                                                           new select::unary_expr(
                                                              type::BOOL, L"NOT", e
+                                                           )
                                                     );                                        .)
  | "EXISTS" 
    '(' 
-       Select                                     (. e = new select::unary_expr(
+       Select                                     (. e = select::expr_handle_type(
+                                                           new select::unary_expr(
                                                              type::BOOL, L"EXISTS", 
-                                                             new select::sub_select_expr(
-                                                               sq_stack.top()
+                                                             select::expr_handle_type(
+                                                                new select::sub_select_expr(
+                                                                  sq_stack.top()
+                                                                )
                                                              )
+                                                           )
                                                      ); sq_stack.pop();                       .) 
    ')'
 .
 
-ConditionRhs<select::expr *l, select::expr *&e> =                 
+ConditionRhs<select::expr_handle_type l, select::expr_handle_type &e> =                 
    (Compare                                      (. std::wstring op(t->val);                  .)
-      (  Operand<e>                              (. e = new select::binary_expr(
-                                                         type::BOOL, op, l, e
+      (  Operand<e>                              (. e = select::expr_handle_type(
+                                                           new select::binary_expr(
+                                                             type::BOOL, op, l, e
+                                                           )
                                                     );                                        .)
        | ("ALL" | "ANY" | "SOME")                (. std::wstring query_op(t->val);            .)  
          '('                                     
-            Select                               (. e = new select::unary_expr(
+            Select                               (. e = select::expr_handle_type(
+                                                           new select::unary_expr(
                                                              type::BOOL, op, 
-                                                             new select::sub_select_expr(
-                                                               sq_stack.top()
+                                                             select::expr_handle_type(
+                                                               new select::sub_select_expr(
+                                                                  sq_stack.top()
+                                                               )
                                                              )
+                                                           )
                                                      ); sq_stack.pop();                       .)
          ')' 
       ) 
@@ -149,62 +166,81 @@ ConditionRhs<select::expr *l, select::expr *&e> =
     [
      "NOT"                                       (. is_not = true;                            .)
     ] 
-    ( "NULL"                                     (. e = new select::binary_expr(
+    ( "NULL"                                     (. e = select::expr_handle_type(
+                                                          new select::binary_expr(
                                                               type::BOOL,
                                                               L"IS", 
-                                                              l, new select::null_expr()
+                                                              l, 
+                                                              select::expr_handle_type(
+                                                                   new select::null_expr()
+                                                              )
+                                                          )
                                                     );  
                                                     if (is_not)
                                                     {
-                                                     e = new select::unary_expr(
+                                                     e = select::expr_handle_type(
+                                                            new select::unary_expr(
                                                                type::BOOL, L"NOT", e
+                                                            )
                                                      );
                                                     }                                        .)                     
      | [
          "DISTINCT" "FROM"                       (. distinct_from = true;                    .)
        ] 
        Operand<e>                                (.
-                                                    e = new select::binary_expr(
+                                                    e = select::expr_handle_type(
+                                                            new select::binary_expr(
                                                               type::BOOL,
                                                               distinct_from    ?
                                                               L"DISTINCT_FROM" :
                                                               L"IS",
                                                               l, e
+                                                            )
                                                     );                                                    
                                                     if (is_not)
                                                     {
-                                                      e = new select::unary_expr(
+                                                      e = select::expr_handle_type(
+                                                            new select::unary_expr(
                                                               L"NOT", e
+                                                            )
                                                       );
                                                     }
                                                                                              .)
      )
    )
- | ("BETWEEN"                                    (. select::expr *mi, *ma;                   .)
+ | ("BETWEEN"                                    (. select::expr_handle_type mi, ma;         .)
      Operand<mi> "AND" Operand<ma>               (.
-                                                    e = new select::binary_expr(
-                                                             type::BOOL,
-                                                             L"AND",
-                                                             new select::binary_expr(
-                                                                   type::BOOL, L">=", e, mi
-                                                             ),
-                                                             new select::binary_expr(
-                                                                   type::BOOL, L"<=", e, ma
-                                                             )
-                                                    ); 
+                                                   e = select::expr_handle_type(
+                                                      new select::binary_expr(
+                                                         type::BOOL,
+                                                         L"AND",
+                                                         select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                                  type::BOOL, L">=", e, mi
+                                                            )
+                                                         ),
+                                                         select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                               type::BOOL, L"<=", e, ma
+                                                            )
+                                                         )
+                                                      )
+                                                   ); 
                                                                                               .)      
    )
  | ("IN" 
     '(' 
-       (Select                                   (. e = new select::sub_select_expr(
+       (Select                                   (. e = select::expr_handle_type(
+                                                            new select::sub_select_expr(
                                                                sq_stack.top()
+                                                            )
                                                     ); sq_stack.pop();                        .)
                                                     
        | Expression<e>                           (. auto *le = new select::list_expr();
                                                     le->add_expression(e);
-                                                    e = le;                                   .)
+                                                    e = select::expr_handle_type(le);                                   .)
           {
-            ','                                  (. select::expr* en = nullptr;               .)
+            ','                                  (. select::expr_handle_type en;              .)
             Expression<en>                       (. le->add_expression(en);                   .)         
           }
        ) 
@@ -214,55 +250,63 @@ ConditionRhs<select::expr *l, select::expr *&e> =
 
 Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
 
-Operand<select::expr *&e>      = 
+Operand<select::expr_handle_type &e>      = 
   Summand<e> 
   {
-   "||"                                          (. select::expr *r = nullptr;                .)
-   Summand<r>                                    (. e = new select::binary_expr(L"||", e, r); .)
+   "||"                                          (. select::expr_handle_type r;               .)
+   Summand<r>                                    (. e = select::expr_handle_type(
+                                                         new select::binary_expr(L"||", e, r));          .)
   }
 .
 
-Summand<select::expr *&e>      = 
+Summand<select::expr_handle_type &e>      = 
   Factor<e> 
   {
-   ('+' | '-')                                   (. select::expr *r; std::wstring op(t->val);  .)
-   Factor<r>                                     (. e = new select::binary_expr(op, e, r);     .)
+   ('+' | '-')                                   (. select::expr_handle_type r; std::wstring op(t->val);  .)
+   Factor<r>                                     (. e = select::expr_handle_type(
+                                                         new select::binary_expr(op, e, r));              .)
   }
 .
 
-Factor<select::expr *&e>       = 
+Factor<select::expr_handle_type &e>       = 
   Term<e> 
   {
-   ('*' | '/' | '%')                             (. select::expr *r; std::wstring op(t->val);  .)
-   Term<r>                                       (. e = new select::binary_expr(op, e, r);     .)
+   ('*' | '/' | '%')                             (. select::expr_handle_type r; std::wstring op(t->val);  .)
+   Term<r>                                       (. e = select::expr_handle_type(
+                                                         new select::binary_expr(op, e, r));              .)
   }
 .
 
-Term<select::expr *&e>        =                  
+Term<select::expr_handle_type &e>        =                  
   Value<e>                                       
 | ( 
     '('  Expression<e> ')'           
-    | Select                                     (. e = new select::sub_select_expr(
+    | Select                                     (. e = select::expr_handle_type(
+                                                            new select::sub_select_expr(
                                                                sq_stack.top()
+                                                            )
                                                       ); sq_stack.pop();                       .)
   )
 .
 
-Value<select::expr *&v>       =                  (. select::numeric_expr *nv; 
-                                                    bool negate = false;                       .)
+Value<select::expr_handle_type &v>       =      (. select::numeric_expr *nv; 
+                                                   bool negate = false;                        .)
   [
       '+' 
     | '-'                                        (. negate = true;                             .)
   ]
   Numeric<nv>                                    (. if (negate)
                                                     {
-                                                      v = new select::unary_expr(
-                                                         L"NEG", nv
+                                                      v = select::expr_handle_type(
+                                                            new select::unary_expr(
+                                                               L"NEG", 
+                                                               select::expr_handle_type(nv)
+                                                            )
                                                       );
                                                     }
                                                     else
                                                     {
-                                                      v = nv;
+                                                      v = select::expr_handle_type(nv);
                                                     }                                          .)
 .
 

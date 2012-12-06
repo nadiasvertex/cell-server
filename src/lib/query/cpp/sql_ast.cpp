@@ -42,27 +42,23 @@ select::numeric_expr::numeric_expr(const std::wstring& _v, int base, bool decima
    }
 }
 
-select::unary_expr::unary_expr(const type& _t, const std::wstring& _op, expr* c):
+select::unary_expr::unary_expr(const type& _t, const std::wstring& _op, expr_handle_type c):
    expr(expr::kind::OP, _t), op(_op), child(c)
 {}
 
-select::unary_expr::unary_expr(const std::wstring& _op, expr* c):
+select::unary_expr::unary_expr(const std::wstring& _op, expr_handle_type c):
     unary_expr(c->t, _op, c)
 {}
 
 select::unary_expr::~unary_expr()
 {
-   if (child!=nullptr)
-   {
-      delete child;
-   }
 }
 
-select::binary_expr::binary_expr(const type& _t, const std::wstring& _op, expr* l, expr* r):
+select::binary_expr::binary_expr(const type& _t, const std::wstring& _op, expr_handle_type l, expr_handle_type r):
    expr(expr::kind::OP, _t), op(_op), left(l), right(r)
 {}
 
-select::binary_expr::binary_expr(const std::wstring& _op, expr* l, expr* r):
+select::binary_expr::binary_expr(const std::wstring& _op, expr_handle_type l, expr_handle_type r):
    binary_expr(l->t, _op, l, r)
 {
    if (r->t > t)
@@ -75,32 +71,19 @@ select::binary_expr::binary_expr(const std::wstring& _op, expr* l, expr* r):
 }
 
 select::binary_expr::~binary_expr()
-{
-   if (left!=nullptr)
-   {
-      delete left;
-   }
-   
-   if (right!=nullptr)
-   {
-      delete right;
-   }
+{   
 }
 
 select::list_expr::list_expr():
    expr(expr::kind::LIST, type::INT) {}
    
 select::list_expr::~list_expr() 
-{ 
-   for(const auto* v : values) 
-   { 
-      delete v; 
-   } 
+{    
 }
 
-void select::list_expr::add_expression(expr* e) 
+void select::list_expr::add_expression(expr_handle_type e) 
 { 
-   values.push_back(e); 
+   values.emplace_back(expr_handle_type(e)); 
 }
 
 select::sub_select_expr::sub_select_expr(select* _ss):expr(kind::SUB_SELECT, type::INT), ss(_ss)
@@ -125,10 +108,6 @@ select::select(select *_parent):query(query::kind::SELECT), parent(_parent)
 
 select::~select()
 {
-   for(auto* se : select_expressions)
-   {
-      delete se;
-   }
 }
 
 } // end namespace sql

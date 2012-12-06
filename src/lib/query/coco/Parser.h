@@ -110,17 +110,17 @@ public:
 
 	void SQL();
 	void Select();
-	void SelectExpr(select::expr *&e);
-	void Expression(select::expr *&e);
-	void AndCondition(select::expr *&e);
-	void Condition(select::expr *&e);
-	void Operand(select::expr *&e);
-	void ConditionRhs(select::expr *l, select::expr *&e);
+	void SelectExpr(select::expr_handle_type &e);
+	void Expression(select::expr_handle_type &e);
+	void AndCondition(select::expr_handle_type &e);
+	void Condition(select::expr_handle_type &e);
+	void Operand(select::expr_handle_type &e);
+	void ConditionRhs(select::expr_handle_type l, select::expr_handle_type &e);
 	void Compare();
-	void Summand(select::expr *&e);
-	void Factor(select::expr *&e);
-	void Term(select::expr *&e);
-	void Value(select::expr *&v);
+	void Summand(select::expr_handle_type &e);
+	void Factor(select::expr_handle_type &e);
+	void Term(select::expr_handle_type &e);
+	void Value(select::expr_handle_type &v);
 	void Numeric(select::numeric_expr *&nv);
 
 	void Parse();

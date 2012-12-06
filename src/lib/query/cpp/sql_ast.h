@@ -1,3 +1,4 @@
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -67,6 +68,8 @@ class select : public query
       virtual ~expr() {};
    };
    
+   typedef std::shared_ptr<expr> expr_handle_type;
+   
    class sub_select_expr : public expr
    {
    public:
@@ -97,37 +100,38 @@ class select : public query
    class list_expr : public expr
    {
    public:
-     std::vector<expr*> values;
+     std::vector<expr_handle_type> values;
      list_expr();
      virtual ~list_expr();
-     void add_expression(expr* e);
+     void add_expression(expr_handle_type e);
    };
    
    class unary_expr : public expr
-   {
-      expr *child;
+   {      
    public:
+      expr_handle_type child;
       std::wstring op;
-      unary_expr(const std::wstring& _op, expr* c);
-      unary_expr(const type& _t, const std::wstring& _op, expr* c);
+      unary_expr(const std::wstring& _op, expr_handle_type c);
+      unary_expr(const type& _t, const std::wstring& _op, expr_handle_type c);
       virtual ~unary_expr();
    };
    
    class binary_expr : public expr
-   {
-      expr *left, *right;
+   {      
    public:
+      expr_handle_type left, right;
       std::wstring op;
-      binary_expr(const std::wstring& _op, expr* l, expr* r);
-      binary_expr(const type& _t, const std::wstring& _op, expr* l, expr* r);
+      binary_expr(const std::wstring& _op, expr_handle_type l, expr_handle_type r);
+      binary_expr(const type& _t, const std::wstring& _op, expr_handle_type l, expr_handle_type r);
       virtual ~binary_expr();
+
    };   
    
    //===--------------------------------------------------------------------------------===//
    // select query types
    //===--------------------------------------------------------------------------------===//
 public:   
-   typedef std::vector<expr*> select_expression_list;
+   typedef std::vector<expr_handle_type> select_expression_list;
    
    //===--------------------------------------------------------------------------------===//
    // select query data
@@ -152,13 +156,13 @@ public:
    }
    
    /** Gets a specific select expression. */
-   expr* select_expression(select_expression_list::size_type index)
+   expr_handle_type select_expression(select_expression_list::size_type index)
    {
       return select_expressions[index];
    }
    
    /** Adds a new select expression to the list. */
-   void add_select_expression(expr* e)
+   void add_select_expression(expr_handle_type e)
    {
       select_expressions.push_back(e);
    }

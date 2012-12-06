@@ -116,7 +116,8 @@ void Parser::Select() {
 		  sq_stack.size() > 0 ? sq_stack.top() : nullptr
 		 )
 		); 
-		select::expr *e = nullptr;                
+		
+		select::expr_handle_type e;               
 		SelectExpr(e);
 		sq_stack.top()->add_select_expression(e); 
 		while (la->kind == 8 /* "," */) {
@@ -126,7 +127,7 @@ void Parser::Select() {
 		}
 }
 
-void Parser::SelectExpr(select::expr *&e) {
+void Parser::SelectExpr(select::expr_handle_type &e) {
 		if (la->kind == 9 /* "*" */) {
 			Get();
 		} else if (StartOf(1)) {
@@ -134,77 +135,90 @@ void Parser::SelectExpr(select::expr *&e) {
 		} else SynErr(38);
 }
 
-void Parser::Expression(select::expr *&e) {
+void Parser::Expression(select::expr_handle_type &e) {
 		AndCondition(e);
 		while (la->kind == 10 /* "OR" */) {
 			Get();
-			select::expr *r;                          
+			select::expr_handle_type r;                          
 			AndCondition(r);
-			e = new select::binary_expr(
+			e = select::expr_handle_type(
+			       new select::binary_expr(
 			        type::BOOL, L"OR", e, r
+			       )
 			);  
 			                                         
 		}
 }
 
-void Parser::AndCondition(select::expr *&e) {
+void Parser::AndCondition(select::expr_handle_type &e) {
 		Condition(e);
 		while (la->kind == 11 /* "AND" */) {
 			Get();
-			select::expr *r;                          
+			select::expr_handle_type r;                          
 			Condition(r);
-			e = new select::binary_expr(
+			e = select::expr_handle_type(
+			       new select::binary_expr(
 			         type::BOOL, L"AND", e, r
+			       )
 			);                                        
 		}
 }
 
-void Parser::Condition(select::expr *&e) {
+void Parser::Condition(select::expr_handle_type &e) {
 		if (StartOf(2)) {
 			Operand(e);
 			while (StartOf(3)) {
-				select::expr *r;                          
+				select::expr_handle_type r;                          
 				ConditionRhs(e, r);
 				e = r;                                    
 			}
 		} else if (la->kind == 12 /* "NOT" */) {
 			Get();
 			Condition(e);
-			e = new select::unary_expr(
+			e = select::expr_handle_type(
+			      new select::unary_expr(
 			        type::BOOL, L"NOT", e
+			      )
 			);                                        
 		} else if (la->kind == 13 /* "EXISTS" */) {
 			Get();
 			Expect(14 /* "(" */);
 			Select();
-			e = new select::unary_expr(
+			e = select::expr_handle_type(
+			     new select::unary_expr(
 			       type::BOOL, L"EXISTS", 
-			       new select::sub_select_expr(
-			         sq_stack.top()
+			       select::expr_handle_type(
+			          new select::sub_select_expr(
+			            sq_stack.top()
+			          )
 			       )
+			     )
 			); sq_stack.pop();                       
 			Expect(15 /* ")" */);
 		} else SynErr(39);
 }
 
-void Parser::Operand(select::expr *&e) {
+void Parser::Operand(select::expr_handle_type &e) {
 		Summand(e);
 		while (la->kind == 32 /* "||" */) {
 			Get();
-			select::expr *r = nullptr;                
+			select::expr_handle_type r;               
 			Summand(r);
-			e = new select::binary_expr(L"||", e, r); 
+			e = select::expr_handle_type(
+			    new select::binary_expr(L"||", e, r));          
 		}
 }
 
-void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
+void Parser::ConditionRhs(select::expr_handle_type l, select::expr_handle_type &e) {
 		if (StartOf(4)) {
 			Compare();
 			std::wstring op(t->val);                  
 			if (StartOf(2)) {
 				Operand(e);
-				e = new select::binary_expr(
-				    type::BOOL, op, l, e
+				e = select::expr_handle_type(
+				      new select::binary_expr(
+				        type::BOOL, op, l, e
+				      )
 				);                                        
 			} else if (la->kind == 16 /* "ALL" */ || la->kind == 17 /* "ANY" */ || la->kind == 18 /* "SOME" */) {
 				if (la->kind == 16 /* "ALL" */) {
@@ -217,11 +231,15 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 				std::wstring query_op(t->val);            
 				Expect(14 /* "(" */);
 				Select();
-				e = new select::unary_expr(
+				e = select::expr_handle_type(
+				      new select::unary_expr(
 				        type::BOOL, op, 
-				        new select::sub_select_expr(
-				          sq_stack.top()
+				        select::expr_handle_type(
+				          new select::sub_select_expr(
+				             sq_stack.top()
+				          )
 				        )
+				      )
 				); sq_stack.pop();                       
 				Expect(15 /* ")" */);
 			} else SynErr(40);
@@ -235,15 +253,22 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 			}
 			if (la->kind == 20 /* "NULL" */) {
 				Get();
-				e = new select::binary_expr(
+				e = select::expr_handle_type(
+				     new select::binary_expr(
 				         type::BOOL,
 				         L"IS", 
-				         l, new select::null_expr()
+				         l, 
+				         select::expr_handle_type(
+				              new select::null_expr()
+				         )
+				     )
 				);  
 				if (is_not)
 				{
-				e = new select::unary_expr(
+				e = select::expr_handle_type(
+				       new select::unary_expr(
 				          type::BOOL, L"NOT", e
+				       )
 				);
 				}                                        
 			} else if (StartOf(5)) {
@@ -253,54 +278,66 @@ void Parser::ConditionRhs(select::expr *l, select::expr *&e) {
 					distinct_from = true;                    
 				}
 				Operand(e);
-				e = new select::binary_expr(
+				e = select::expr_handle_type(
+				       new select::binary_expr(
 				         type::BOOL,
 				         distinct_from    ?
 				         L"DISTINCT_FROM" :
 				         L"IS",
 				         l, e
+				       )
 				);                                                    
 				if (is_not)
 				{
-				 e = new select::unary_expr(
+				 e = select::expr_handle_type(
+				       new select::unary_expr(
 				         L"NOT", e
+				       )
 				 );
 				}
 				                                        
 			} else SynErr(41);
 		} else if (la->kind == 23 /* "BETWEEN" */) {
 			Get();
-			select::expr *mi, *ma;                   
+			select::expr_handle_type mi, ma;         
 			Operand(mi);
 			Expect(11 /* "AND" */);
 			Operand(ma);
-			e = new select::binary_expr(
-			        type::BOOL,
-			        L"AND",
+			e = select::expr_handle_type(
+			  new select::binary_expr(
+			     type::BOOL,
+			     L"AND",
+			     select::expr_handle_type(
 			        new select::binary_expr(
 			              type::BOOL, L">=", e, mi
-			        ),
-			        new select::binary_expr(
-			              type::BOOL, L"<=", e, ma
 			        )
+			     ),
+			     select::expr_handle_type(
+			        new select::binary_expr(
+			           type::BOOL, L"<=", e, ma
+			        )
+			     )
+			  )
 			); 
-			                                         
+			                                          
 		} else if (la->kind == 24 /* "IN" */) {
 			Get();
 			Expect(14 /* "(" */);
 			if (la->kind == 7 /* "SELECT" */) {
 				Select();
-				e = new select::sub_select_expr(
+				e = select::expr_handle_type(
+				       new select::sub_select_expr(
 				          sq_stack.top()
+				       )
 				); sq_stack.pop();                        
 			} else if (StartOf(1)) {
 				Expression(e);
 				auto *le = new select::list_expr();
 				le->add_expression(e);
-				e = le;                                   
+				e = select::expr_handle_type(le);                                   
 				while (la->kind == 8 /* "," */) {
 					Get();
-					select::expr* en = nullptr;               
+					select::expr_handle_type en;              
 					Expression(en);
 					le->add_expression(en);                   
 				}
@@ -343,7 +380,7 @@ void Parser::Compare() {
 		}
 }
 
-void Parser::Summand(select::expr *&e) {
+void Parser::Summand(select::expr_handle_type &e) {
 		Factor(e);
 		while (la->kind == 33 /* "+" */ || la->kind == 34 /* "-" */) {
 			if (la->kind == 33 /* "+" */) {
@@ -351,13 +388,14 @@ void Parser::Summand(select::expr *&e) {
 			} else {
 				Get();
 			}
-			select::expr *r; std::wstring op(t->val);  
+			select::expr_handle_type r; std::wstring op(t->val);  
 			Factor(r);
-			e = new select::binary_expr(op, e, r);     
+			e = select::expr_handle_type(
+			    new select::binary_expr(op, e, r));              
 		}
 }
 
-void Parser::Factor(select::expr *&e) {
+void Parser::Factor(select::expr_handle_type &e) {
 		Term(e);
 		while (la->kind == 9 /* "*" */ || la->kind == 35 /* "/" */ || la->kind == 36 /* "%" */) {
 			if (la->kind == 9 /* "*" */) {
@@ -367,13 +405,14 @@ void Parser::Factor(select::expr *&e) {
 			} else {
 				Get();
 			}
-			select::expr *r; std::wstring op(t->val);  
+			select::expr_handle_type r; std::wstring op(t->val);  
 			Term(r);
-			e = new select::binary_expr(op, e, r);     
+			e = select::expr_handle_type(
+			    new select::binary_expr(op, e, r));              
 		}
 }
 
-void Parser::Term(select::expr *&e) {
+void Parser::Term(select::expr_handle_type &e) {
 		if (StartOf(6)) {
 			Value(e);
 		} else if (la->kind == 7 /* "SELECT" */ || la->kind == 14 /* "(" */) {
@@ -383,16 +422,18 @@ void Parser::Term(select::expr *&e) {
 				Expect(15 /* ")" */);
 			} else {
 				Select();
-				e = new select::sub_select_expr(
+				e = select::expr_handle_type(
+				       new select::sub_select_expr(
 				          sq_stack.top()
+				       )
 				 ); sq_stack.pop();                       
 			}
 		} else SynErr(45);
 }
 
-void Parser::Value(select::expr *&v) {
+void Parser::Value(select::expr_handle_type &v) {
 		select::numeric_expr *nv; 
-		bool negate = false;                       
+		bool negate = false;                        
 		if (la->kind == 33 /* "+" */ || la->kind == 34 /* "-" */) {
 			if (la->kind == 33 /* "+" */) {
 				Get();
@@ -404,13 +445,16 @@ void Parser::Value(select::expr *&v) {
 		Numeric(nv);
 		if (negate)
 		{
-		 v = new select::unary_expr(
-		    L"NEG", nv
+		 v = select::expr_handle_type(
+		       new select::unary_expr(
+		          L"NEG", 
+		          select::expr_handle_type(nv)
+		       )
 		 );
 		}
 		else
 		{
-		 v = nv;
+		 v = select::expr_handle_type(nv);
 		}                                          
 }
 
