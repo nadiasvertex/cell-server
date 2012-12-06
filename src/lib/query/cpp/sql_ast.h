@@ -64,6 +64,7 @@ class select : public query
       type t;
       
       expr(const kind& _k, const type& _t):k(_k), t(_t) {}
+      virtual ~expr() {};
    };
    
    class sub_select_expr : public expr
@@ -141,7 +142,7 @@ private:
    // select query API
    //===--------------------------------------------------------------------------------===//
 public:
-   select(select *_parent):query(query::kind::SELECT), parent(_parent) {}
+   select(select *_parent);
    virtual ~select();
 
    /** Find out how many select expressions are in this query. */

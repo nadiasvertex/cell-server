@@ -119,6 +119,10 @@ select::sub_select_expr::~sub_select_expr()
    }
 }
 
+select::select(select *_parent):query(query::kind::SELECT), parent(_parent) 
+{
+}
+
 select::~select()
 {
    for(auto* se : select_expressions)

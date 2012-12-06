@@ -115,8 +115,15 @@ void Parser::Select() {
 		 query_handle_type(
 		    sq_stack.top()
 		 )
-		);
-		/*sq_stack.clear();*/                         
+		); sq_stack.pop();
+		
+		if (sq_stack.size())
+		{
+		 errors->Error(t->line, t->col, 
+		 L"internal error: select stack not "
+		 L"empty at this point.");
+		}
+		                                        
 }
 
 void Parser::SelectExpr(select::expr *&e) {
