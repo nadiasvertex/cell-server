@@ -87,6 +87,22 @@ select::binary_expr::~binary_expr()
    }
 }
 
+select::list_expr::list_expr():
+   expr(expr::kind::LIST, type::INT) {}
+   
+select::list_expr::~list_expr() 
+{ 
+   for(const auto* v : values) 
+   { 
+      delete v; 
+   } 
+}
+
+void select::list_expr::add_expression(expr* e) 
+{ 
+   values.push_back(e); 
+}
+
 select::sub_select_expr::sub_select_expr(select* _ss):expr(kind::SUB_SELECT, type::INT), ss(_ss)
 {
    if (ss!=nullptr && ss->count_select_expressions() > 0)

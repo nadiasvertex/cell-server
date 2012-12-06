@@ -97,9 +97,9 @@ class select : public query
    {
    public:
      std::vector<expr*> values;
-     list_expr():expr(expr::kind::LIST, type::INT) {};
-     virtual ~list_expr() { for(const auto* v : values) { delete v; } }
-     void add_expression(expr* e) { values.push_back(e); }
+     list_expr();
+     virtual ~list_expr();
+     void add_expression(expr* e);
    };
    
    class unary_expr : public expr
