@@ -95,11 +95,14 @@ public:
 private:
    select_expression_list select_expressions;
    
+   /** The parent select (if there is one.) */
+   select *parent;
+   
    //===--------------------------------------------------------------------------------===//
    // select query API
    //===--------------------------------------------------------------------------------===//
 public:
-   select() {}
+   select(select *_parent):parent(_parent) {}
    virtual ~select();
 
    /** Find out how many select expressions are in this query. */

@@ -1,3 +1,4 @@
+#include <stack>
 #include <vector>
 #include <query/cpp/sql_ast.h>
 
@@ -6,9 +7,10 @@ COMPILER SQL
 public:
    std::vector<query*> queries;
    
-private:
-   /** The current select query, if any. */
-   select *sq;
+private:   
+   /** Holds our select queries. We may have nested sub selects, so we
+    * need to be able to keep track of them. */
+   std::stack<select *> sq_stack;
    
 public:
 
@@ -51,11 +53,15 @@ IGNORE eol + cr + tab
 PRODUCTIONS
 
 SQL          = Select ';'.
-Select       = "SELECT"                          (. sq = new sql::select(); 
-                                                    select::expr *e = nullptr;    .)
+Select       = "SELECT"                          (. sq_stack.push(
+                                                      new sql::select(
+                                                       sq_stack.size() > 0 ? sq_stack.top() : nullptr
+                                                      )
+                                                    ); 
+                                                    select::expr *e = nullptr;                .)
                                                     
-              SelectExpr<e>                      (. sq->add_select_expression(e); .)                  
-               {',' SelectExpr<e>                (. sq->add_select_expression(e); .)
+              SelectExpr<e>                      (. sq_stack.top()->add_select_expression(e); .)                  
+               {',' SelectExpr<e>                (. sq_stack.top()->add_select_expression(e); .)
                }
 .
              
@@ -81,15 +87,22 @@ AndCondition<select::expr *&e> =
 .
 Condition<select::expr *&e>    = 
    Operand<e>  { ConditionRhs<e> } 
- | "NOT" Condition<e>                            (. e = new select::unary_expr(L"NOT", e); .)
+ | "NOT" Condition<e>                            (. e = new select::unary_expr(L"NOT", e);    .)
  | "EXISTS" '(' Select ')'
 .
 
 ConditionRhs<select::expr *&e> =                 
-   (Compare ( Operand<e> | ("ALL" | "ANY" | "SOME") '(' Select ')' ) )
+   (Compare                                      (. std::wstring op(t->val);                  .)
+      (  Operand<e>                              (. e = new select::unary_expr(op, e);        .)
+       | ("ALL" | "ANY" | "SOME")                (. std::wstring query_op(t->val);            .)  
+         '('                                     
+            Select                               (.  .)
+         ')' 
+      ) 
+   )
  | ("IS" ["NOT"] ("NULL" | ["DISTINCT" "FROM"] Operand<e>))
  | ("BETWEEN" Operand<e> "AND" Operand<e>)
-  ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
+   ("IN" '(' (Select | Expression<e> {',' Expression<e>}) ')')
 .
 
 Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".

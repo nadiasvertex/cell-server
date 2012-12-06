@@ -98,14 +98,18 @@ void Parser::SQL() {
 
 void Parser::Select() {
 		Expect(7 /* "SELECT" */);
-		sq = new sql::select(); 
-		select::expr *e = nullptr;    
+		sq_stack.push(
+		 new sql::select(
+		  sq_stack.size() > 0 ? sq_stack.top() : nullptr
+		 )
+		); 
+		select::expr *e = nullptr;                
 		SelectExpr(e);
-		sq->add_select_expression(e); 
+		sq_stack.top()->add_select_expression(e); 
 		while (la->kind == 8 /* "," */) {
 			Get();
 			SelectExpr(e);
-			sq->add_select_expression(e); 
+			sq_stack.top()->add_select_expression(e); 
 		}
 }
 
@@ -146,7 +150,7 @@ void Parser::Condition(select::expr *&e) {
 		} else if (la->kind == 12 /* "NOT" */) {
 			Get();
 			Condition(e);
-			e = new select::unary_expr(L"NOT", e); 
+			e = new select::unary_expr(L"NOT", e);    
 		} else if (la->kind == 13 /* "EXISTS" */) {
 			Get();
 			Expect(14 /* "(" */);
@@ -168,8 +172,10 @@ void Parser::Operand(select::expr *&e) {
 void Parser::ConditionRhs(select::expr *&e) {
 		if (StartOf(4)) {
 			Compare();
+			std::wstring op(t->val);                  
 			if (StartOf(2)) {
 				Operand(e);
+				e = new select::unary_expr(op, e);        
 			} else if (la->kind == 16 /* "ALL" */ || la->kind == 17 /* "ANY" */ || la->kind == 18 /* "SOME" */) {
 				if (la->kind == 16 /* "ALL" */) {
 					Get();
@@ -178,8 +184,10 @@ void Parser::ConditionRhs(select::expr *&e) {
 				} else {
 					Get();
 				}
+				std::wstring query_op(t->val);            
 				Expect(14 /* "(" */);
 				Select();
+				
 				Expect(15 /* ")" */);
 			} else SynErr(40);
 		} else if (la->kind == 19 /* "IS" */) {
