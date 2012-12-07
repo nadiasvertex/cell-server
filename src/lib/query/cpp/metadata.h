@@ -5,9 +5,12 @@
 #include <query/cpp/database_id.h>
 #include <data_engine/cpp/table_id.h>
 #include <data_engine/cpp/column_id.h>
+#include <common/cpp/expected.h>
 
 namespace cell {
 namespace query {
+
+using namespace cell::common;
 
 /** 
  * Stores metadata information about
@@ -35,11 +38,11 @@ public:
    public:
       table(const std::string& _name):name(_name) {}      
       
-      bool add_column(const std::string& name, const data_type& type);
+      expected<bool> add_column(const std::string& name, const data_type& type);
       
-      void drop_column(const column_id& cid);
+      expected<bool> drop_column(const column_id& cid);
       
-      column_id column(const std::string& name);
+      expected<column_id> column(const std::string& name);
    };
       
    class database
@@ -58,11 +61,11 @@ public:
    public:
       database(const std::string& _name):name(_name) {}
       
-      bool create_table(const std::string& name);
+      expected<bool> create_table(const std::string& name);
       
-      void drop_table(const table_id& tid);
+      expected<bool> drop_table(const table_id& tid);
       
-      table_id table(const std::string& name);
+      expected<table_id> table(const std::string& name);
    }
 
 };

@@ -12,13 +12,16 @@ class column_id
 	
 	friend class column_id_hash;
 
+   column_id(std::uint64_t value):id(value)
+   {}
+   
 public:
 	/** Create a new, empty column id. */
 	column_id():id(0) {}
    
    static column_id from_uint64(std::uint64_t value)
    {
-      return table_id(value);
+      return column_id(value);
    }
 	
 	/**

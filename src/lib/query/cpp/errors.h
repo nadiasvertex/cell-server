@@ -10,6 +10,7 @@ namespace query {
 enum class syntax_error_code
 {
 	unknown_column,
+   duplicate_column,
 	unknown_table,
 	missing_from
 };
@@ -46,6 +47,25 @@ public:
 		return syntax_error_code::unknown_column;
 	}
 };
+
+class duplicate_column_error: public syntax_error
+{
+public:
+	duplicate_column_error(const std::string& table_name,
+			const std::string& column_name) :
+			syntax_error(
+				"There is already a column named '" + column_name +
+				"' in the "
+				"specification for table '" + table_name + "'.")
+	{
+	}
+
+	virtual syntax_error_code code() const noexcept
+	{
+		return syntax_error_code::duplicate_column;
+	}
+};
+
 
 class unknown_table_error: public syntax_error
 {

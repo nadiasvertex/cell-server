@@ -29,7 +29,7 @@ else:
 	mono_path = "/usr/local/mono"
 	env.Append(PATH=":" + os.path.join(toolchain_path, "bin"))
 
-env.Append(CXXFLAGS='-std=gnu++11 -O3 -g -I"' + mono_include + '"')
+env.Append(CXXFLAGS='--with-arch=i686 -std=gnu++11 -O3 -g -I"' + mono_include + '"')
 env.Append(LIBPATH=['.', os.path.join(toolchain_path, "lib"), 
                     os.path.join(mono_path, "lib")])
 

@@ -20,7 +20,7 @@ public:
          DOUBLE,
          DECIMAL,
          VARCHAR
-   }
+   };
    
    /** The kind of data. */
    kind k;
