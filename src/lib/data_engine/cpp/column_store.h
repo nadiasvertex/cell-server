@@ -1,3 +1,6 @@
+#ifndef __CELL_ENGINE_COLUMN_STORE_H__
+#define __CELL_ENGINE_COLUMN_STORE_H__
+
 #include <cstdint>
 #include <unordered_map>
 #include <data_engine/cpp/data_store.h>
@@ -133,3 +136,5 @@ public:
 
 } // end namespace engine
 } // end namespace cell
+
+#endif // __CELL_ENGINE_COLUMN_STORE_H__

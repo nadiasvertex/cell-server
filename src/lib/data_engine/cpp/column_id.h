@@ -1,3 +1,6 @@
+#ifndef __CELL_ENGINE_COLUMN_ID_H__
+#define __CELL_ENGINE_COLUMN_ID_H__
+
 #include <cstdint>
 
 namespace cell   {
@@ -12,6 +15,11 @@ class column_id
 public:
 	/** Create a new, empty column id. */
 	column_id():id(0) {}
+   
+   static column_id from_uint64(std::uint64_t value)
+   {
+      return table_id(value);
+   }
 	
 	/**
 	 * Copy a column id.
@@ -63,6 +71,7 @@ public:
    }
 };
 
-
 } // end namespace engine
 } // end namespace cell
+
+#endif // __CELL_ENGINE_COLUMN_ID_H__

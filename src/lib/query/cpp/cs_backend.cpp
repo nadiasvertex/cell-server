@@ -170,7 +170,7 @@ cs_backend::generate_select(sql::select *sq)
    cb.indent();
    s << "[ProtoContract]" << std::endl;
    cb.indent();
-   s << "public struct output {" << std::endl;
+   s << "public struct row {" << std::endl;
    // Generate struct to contain select expression output
    for(auto i = 0; i< se_count; ++i)
    {
@@ -212,7 +212,7 @@ cs_backend::generate_select(sql::select *sq)
    cb.indent();
    s << "public void serialize() {" << std::endl;   
    cb.indent();
-   s << "   var data = new output {";
+   s << "   var data = new row {";
    for(auto i = 0; i< se_count; ++i)
    {      
       s << "c" << i << "=select_expr_" << i << "()";
