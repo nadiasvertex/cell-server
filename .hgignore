@@ -12,12 +12,17 @@ syntax: glob
 *.lai
 *.pyc
 *.*~
+toolchain/packages.db
 toolchain/bin/*
 toolchain/lib/*
 toolchain/include/*
+toolchain/share/*
+toolchain/src/crosstool-ng*
 build/*
 python/*
+config.gen/*
 .sconsign.dblite
+config
 cell_test
 #*#
 
