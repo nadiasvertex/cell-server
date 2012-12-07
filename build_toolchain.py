@@ -10,12 +10,14 @@ from glob import glob
 
 # Various important paths
 toolchain_dir = os.path.join(os.getcwd(), "toolchain")
+toolchain_platform_dir = os.path.join(toolchain_dir, sys.platform)
 toolchain_src_dir = os.path.join(toolchain_dir, "src")
 package_db = os.path.join(toolchain_dir, "packages.db")
 tool_status_d = {} if not os.path.exists(package_db) else pickle.load(open(package_db, "rb"))
 
 # Add the toolchain path to our PATH.
-os.environ["PATH"] += ":" + os.path.join(toolchain_dir, "bin")
+os.environ["PATH"] +=":" + (":".join([os.path.join(toolchain_dir, "bin"),
+                                      os.path.join(toolchain_platform_dir, "bin")]))
 
 def set_status(toolname, status):
    tool_status_d[toolname] = status
@@ -97,13 +99,9 @@ def core_toolchain():
       config_path = os.path.join(toolchain_dir, "cell.config")
       with open(config_path) as inp:
          data=inp.read()
-      with open(config_path) as out:
-         data=data.replace("{{toolchain_path}}", toolchain_dir)
+      with open(".config", "w") as out:
+         data=data.replace("{{toolchain_path}}", toolchain_platform_dir)
          out.write(data)
-
-      prep_cmd = "ct-ng oldconfig %s" % config_path
-      if run(prep_cmd)!=0:
-         return False
 
       set_status(package_name, "SOURCE")
 
