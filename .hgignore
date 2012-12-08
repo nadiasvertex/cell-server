@@ -24,6 +24,9 @@ build/*
 python/*
 config.gen/*
 .sconsign.dblite
+.project
+.pydevproject
+.cproject
 config
 cell_test
 #*#
