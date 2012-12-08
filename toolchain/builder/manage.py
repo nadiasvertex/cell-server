@@ -42,11 +42,11 @@ class Manager(object):
       built = []
       drop = []
       
-      def has_unmet_dependencies(deps):
+      def has_unmet_dependencies(deps):         
          for dep in deps:
-            for pkg in built:
+            for pkg in built:               
                if fnmatch(pkg, dep):
-                  continue
+                  break
             else:
                print "Need %s" % dep
                return True

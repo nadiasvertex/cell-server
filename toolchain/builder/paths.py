@@ -11,7 +11,7 @@ toolchain_platform_dir = os.path.join(toolchain_dir, sys.platform)
 toolchain_src_dir = os.path.join(toolchain_dir, "src")
 
 # The c++ compiler for the toolchain
-toolchain_compiler = os.path.join(toolchain_platform_dir, 
+toolchain_compiler = os.path.join(toolchain_platform_dir, "bin", 
                                   "x86_64-cell-linux-gnu-g++")
 
 # The database for package building.
