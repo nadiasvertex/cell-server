@@ -35,10 +35,48 @@ class Manager(object):
             if not os.path.exists(dst_dir):
                os.makedirs(dst_dir)
             shutil.copyfile(src_file, dst_file)
-
+            
+   def get_dependencies(self, pkg_name):
+      requires = self.packages[pkg_name][2]
+      
+      deps = set()
+      for k, v in self.packages.iteritems():
+         full_name = v[0] % v[1]
+         for req in requires:
+            if fnmatch(full_name, req):
+               deps.add(k)
+               break
+      
+      all_deps = deps.copy()
+      for dep in deps:
+         all_deps = all_deps.union(self.get_dependencies(dep))
+      return all_deps
        
-   def build(self):      
-      to_build = copy(self.packages)
+   def build(self, packages):
+      if not packages:      
+         to_build = copy(self.packages)
+      else:         
+         to_build = {}
+         package_names = [x.strip() for x in packages.split(",")]
+         package_dependencies = set(package_names)
+         for pkg_name in package_names:            
+            if pkg_name not in self.packages:
+               print "Package '%s' is not in the toolchain index." % pkg_name
+               return False            
+            
+            # Get the dependencies
+            package_dependencies = package_dependencies.union(
+                                       self.get_dependencies(pkg_name)
+                                   )
+            
+         for pkg_name in package_dependencies:
+            # Select the package to build.
+            to_build[pkg_name] = self.packages[pkg_name]            
+         
+         for pkg_name in sorted(to_build.keys()):
+            print "Selecting %s" % pkg_name
+            
+         
       built = []
       drop = []
       

@@ -32,6 +32,7 @@ if args.list_pkgs:
       print ",".join(v[2]).rjust(40)
    sys.exit(0)
    
-mgr.build()
+if mgr.build(args.build_pkgs)==False:
+   sys.exit(1)
 
 print("Finished")
