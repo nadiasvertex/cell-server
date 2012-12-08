@@ -19,6 +19,7 @@ toolchain/include/*
 toolchain/share/*
 toolchain/linux*
 toolchain/src/crosstool-ng*
+toolchain/src/mono*
 build/*
 .build/*
 python/*

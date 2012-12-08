@@ -38,7 +38,10 @@ if args.list_pkgs:
 if args.rebuild_pkgs:
    pkg_names = [x.strip() for x in args.rebuild_pkgs.split(",")]
    for pkg_name in pkg_names:
-      mgr.set_status(pkg_name, "MISSING")
+      if pkg_name in mgr.packages:
+         mgr.set_status(pkg_name, "MISSING")
+      else:
+         print "Package '%s' is not in the toolchain index." % pkg_name
    
 if mgr.build(args.build_pkgs)==False:
    sys.exit(1)
