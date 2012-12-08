@@ -74,11 +74,9 @@ class Manager(object):
             to_build[pkg_name] = self.packages[pkg_name]            
          
          for pkg_name in sorted(to_build.keys()):
-            print "Selecting %s" % pkg_name
-            
+            print "Selecting %s" % pkg_name            
          
-      built = []
-      drop = []
+      built = []      
       
       def has_unmet_dependencies(deps):         
          for dep in deps:
@@ -91,7 +89,8 @@ class Manager(object):
          
          return False
          
-      while to_build:         
+      while to_build:
+         drop = []         
          for k,v in to_build.iteritems():         
             name, version, depends, builder = v
             
@@ -105,6 +104,7 @@ class Manager(object):
             status = self.get_status(pkg_name)
             if status == "BINARY":
                built.append(pkg_name)
+               drop.append(k)
                continue
    
             print "Building %s" % pkg_name
@@ -119,11 +119,12 @@ class Manager(object):
             drop.append(k)
             
          for k in drop:
-            del to_build[k]
+            del to_build[k]            
             
          if len(drop)==0:
             print "Unmet dependencies in toolchain, aborting."
             return False
+         
          
          
    def load_packages(self, where):
