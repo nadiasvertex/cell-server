@@ -4,21 +4,21 @@ from builder.paths import toolchain_compiler,toolchain_compiler_c
 import os 
 import urllib2
 
-__version__ = "3.0.2"
-__pakname__ = "mono-%s"
-__depends__ = ["core-toolchain-*", "glib-*"]
+__version__ = "3.0.9"
+__pakname__ = "libffi-%s"
+__depends__ = ["core-toolchain-*"]
 
 def build(mgr, package_name, version, status):   
    # Package is missing entirely.
-   if status == "MISSING":   
-      url = 'http://download.mono-project.com/sources/mono/mono-%s.tar.bz2' % version
-      mgr.fetch(url, "mono.tar.bz2")
+   if status == "MISSING":
+      url = 'ftp://sourceware.org/pub/libffi/libffi-%s.tar.gz' % version
+      mgr.fetch(url, "libffi.tar.gz")
 
-      extract_cmd = "tar -xjf mono.tar.bz2 --directory %s" % toolchain_src_dir
+      extract_cmd = "tar -xzf libffi.tar.gz --directory %s" % toolchain_src_dir
       if mgr.run(extract_cmd)!=0:
          return False
 
-      os.unlink("mono.tar.bz2")
+      os.unlink("libffi.tar.gz")
       mgr.set_status(package_name, "SOURCE")  
 
    # Package is present in source form, and needs compiling
@@ -28,10 +28,8 @@ def build(mgr, package_name, version, status):
 
    try:
       os.environ["CC"] = toolchain_compiler_c
-      os.environ["CXX"] = toolchain_compiler      
-      configure_cmd = "./configure --prefix=%s --program-prefix=cell- " \
-                      "--enable-silent-rules --disable-dependency-tracking " \
-                      "--disable-shared --with-mcs-docs=no" %\
+      os.environ["CXX"] = toolchain_compiler
+      configure_cmd = "./configure --prefix=%s" %\
           toolchain_platform_dir
       if mgr.run(configure_cmd)!=0:
          return False
@@ -39,6 +37,12 @@ def build(mgr, package_name, version, status):
       build_cmd = "make && make install"
       if mgr.run(build_cmd)!=0:
          return False
+     
+      include_src_dir = os.path.join(toolchain_platform_dir, "lib",
+                                     package_name, "include")
+      include_dst_dir = os.path.join(toolchain_platform_dir, "include")      
+      mgr.copy_tree(include_src_dir, include_dst_dir)
+      
    finally:
       os.chdir(cur_dir)
 

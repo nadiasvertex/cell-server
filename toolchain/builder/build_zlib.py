@@ -4,21 +4,22 @@ from builder.paths import toolchain_compiler,toolchain_compiler_c
 import os 
 import urllib2
 
-__version__ = "3.0.2"
-__pakname__ = "mono-%s"
-__depends__ = ["core-toolchain-*", "glib-*"]
+__version__ = "1.2.7"
+__pakname__ = "zlib-%s"
+__depends__ = ["core-toolchain-*"]
 
 def build(mgr, package_name, version, status):   
    # Package is missing entirely.
-   if status == "MISSING":   
-      url = 'http://download.mono-project.com/sources/mono/mono-%s.tar.bz2' % version
-      mgr.fetch(url, "mono.tar.bz2")
+   if status == "MISSING":
+      url = 'http://zlib.net/zlib-%s.tar.bz2' % version
+      archive = "zlib.tar.bz2"
+      mgr.fetch(url, archive)
 
-      extract_cmd = "tar -xjf mono.tar.bz2 --directory %s" % toolchain_src_dir
+      extract_cmd = "tar -xjf %s --directory %s" % (archive, toolchain_src_dir)
       if mgr.run(extract_cmd)!=0:
          return False
 
-      os.unlink("mono.tar.bz2")
+      os.unlink(archive)
       mgr.set_status(package_name, "SOURCE")  
 
    # Package is present in source form, and needs compiling
@@ -28,10 +29,9 @@ def build(mgr, package_name, version, status):
 
    try:
       os.environ["CC"] = toolchain_compiler_c
-      os.environ["CXX"] = toolchain_compiler      
-      configure_cmd = "./configure --prefix=%s --program-prefix=cell- " \
-                      "--enable-silent-rules --disable-dependency-tracking " \
-                      "--disable-shared --with-mcs-docs=no" %\
+      os.environ["CFLAGS"] = "-I%s" % (os.path.join(toolchain_platform_dir, "include"))
+      os.environ["LDFLAGS"] = "-L%s" % (os.path.join(toolchain_platform_dir, "lib"))
+      configure_cmd = "./configure --prefix=%s" %\
           toolchain_platform_dir
       if mgr.run(configure_cmd)!=0:
          return False

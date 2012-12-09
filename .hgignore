@@ -20,6 +20,9 @@ toolchain/share/*
 toolchain/linux*
 toolchain/src/crosstool-ng*
 toolchain/src/mono*
+toolchain/src/libffi*
+toolchain/src/glib*
+toolchain/src/zlib*
 build/*
 .build/*
 python/*

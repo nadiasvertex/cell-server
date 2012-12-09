@@ -7,6 +7,7 @@ import imp
 import os
 import pickle
 import shutil
+import urllib2
 
 class Manager(object):
    def __init__(self):
@@ -25,6 +26,13 @@ class Manager(object):
    def run(self, cmd):
       print cmd
       return os.system(cmd)
+  
+   def fetch(self, url, dst):
+      f = urllib2.urlopen(url)
+      print ("Downloading %s" % url)
+      with open(dst, "wb") as out:
+         out.write(f.read())
+      f.close()
    
    def copy_tree(self, src, dst):
       for root, _, files in os.walk(src):
