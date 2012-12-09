@@ -39,6 +39,11 @@ def build(mgr, package_name, version, status):
       build_cmd = "make && make install"
       if mgr.run(build_cmd)!=0:
          return False
+      
+      ln_cmd = "ln %s/bin/cell-mono %s/bin/mono" %\
+       (toolchain_platform_dir, toolchain_platform_dir)
+      if mgr.run(ln_cmd)!=0:
+          return False
    finally:
       os.chdir(cur_dir)
 
