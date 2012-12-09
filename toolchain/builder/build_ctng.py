@@ -1,7 +1,6 @@
 from builder.paths import toolchain_dir, toolchain_src_dir
 
 import os 
-import urllib2
 
 __version__ = "1.17.0"
 __pakname__ = "crosstool-ng-%s"

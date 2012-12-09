@@ -2,7 +2,6 @@ from builder.paths import toolchain_platform_dir, toolchain_src_dir
 from builder.paths import toolchain_compiler,toolchain_compiler_c
 
 import os 
-import urllib2
 
 __version__ = "1.2.7"
 __pakname__ = "zlib-%s"

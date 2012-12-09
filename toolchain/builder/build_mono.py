@@ -2,7 +2,6 @@ from builder.paths import toolchain_platform_dir, toolchain_src_dir
 from builder.paths import toolchain_compiler,toolchain_compiler_c
 
 import os 
-import urllib2
 
 __version__ = "3.0.2"
 __pakname__ = "mono-%s"
@@ -44,7 +43,7 @@ def build(mgr, package_name, version, status):
       ln_cmd = "ln %s/bin/cell-mono %s/bin/mono" %\
        (toolchain_platform_dir, toolchain_platform_dir)
       if mgr.run(ln_cmd)!=0:
-          return False
+         return False
    finally:
       os.chdir(cur_dir)
 
