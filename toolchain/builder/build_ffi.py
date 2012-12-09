@@ -12,13 +12,14 @@ def build(mgr, package_name, version, status):
    # Package is missing entirely.
    if status == "MISSING":
       url = 'ftp://sourceware.org/pub/libffi/libffi-%s.tar.gz' % version
-      mgr.fetch(url, "libffi.tar.gz")
+      archive = "libffi.tar.gz"
+      mgr.fetch(url, archive)
 
-      extract_cmd = "tar -xzf libffi.tar.gz --directory %s" % toolchain_src_dir
+      extract_cmd = "tar -xzf %s --directory %s" % (archive, toolchain_src_dir)
       if mgr.run(extract_cmd)!=0:
          return False
 
-      os.unlink("libffi.tar.gz")
+      os.unlink(archive)
       mgr.set_status(package_name, "SOURCE")  
 
    # Package is present in source form, and needs compiling

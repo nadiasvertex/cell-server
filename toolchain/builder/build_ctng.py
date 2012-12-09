@@ -11,17 +11,14 @@ def build(mgr, package_name, version, status):
    # Package is missing entirely.
    if status == "MISSING":   
       url = 'http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-%s.tar.bz2' % version
-      f = urllib2.urlopen(url)
-      print ("Downloading %s" % url)
-      with open("crosstool-ng.tar.bz2", "wb") as out:
-         out.write(f.read())
-      f.close()
+      archive = "crosstool-ng.tar.bz2"
+      mgr.fetch(url, archive)
 
-      extract_cmd = "tar -xjf crosstool-ng.tar.bz2 --directory %s" % toolchain_src_dir
+      extract_cmd = "tar -xjf %s --directory %s" % (archive, toolchain_src_dir)
       if mgr.run(extract_cmd)!=0:
          return False
 
-      os.unlink("crosstool-ng.tar.bz2")
+      os.unlink(archive)
       mgr.set_status(package_name, "SOURCE")  
 
    # Package is present in source form, and needs compiling

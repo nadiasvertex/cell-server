@@ -15,7 +15,7 @@ class Manager(object):
       self.db = {} if not os.path.exists(package_db) \
                   else pickle.load(open(package_db, "rb"))
        
-   def set_status(self, pkg_name, status):
+   def set_status(self, pkg_name, status):      
       self.db[pkg_name] = status
       with open(package_db, "wb") as out:
          pickle.dump(self.db, out)

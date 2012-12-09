@@ -22,6 +22,10 @@ def build(mgr, package_name, version, status):
    build_cmd = "ct-ng build"
    if mgr.run(build_cmd)!=0:
       return False
+   
+   rw_cmd = "chmod -R +w %s" % toolchain_platform_dir
+   if mgr.run(rw_cmd)!=0:
+      return False
 
    mgr.set_status(package_name, "BINARY")
    return True

@@ -8,7 +8,7 @@ __version__ = "3.0.2"
 __pakname__ = "mono-%s"
 __depends__ = ["core-toolchain-*", "glib-*"]
 
-def build(mgr, package_name, version, status):   
+def build(mgr, package_name, version, status):
    # Package is missing entirely.
    if status == "MISSING":   
       url = 'http://download.mono-project.com/sources/mono/mono-%s.tar.bz2' % version
@@ -31,7 +31,8 @@ def build(mgr, package_name, version, status):
       os.environ["CXX"] = toolchain_compiler      
       configure_cmd = "./configure --prefix=%s --program-prefix=cell- " \
                       "--enable-silent-rules --disable-dependency-tracking " \
-                      "--disable-shared --with-mcs-docs=no" %\
+                      "--disable-shared --without-gtk --without-gtk+ " \
+                      "--without-gdiplus --with-mcs-docs=no" %\
           toolchain_platform_dir
       if mgr.run(configure_cmd)!=0:
          return False
