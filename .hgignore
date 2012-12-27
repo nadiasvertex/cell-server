@@ -23,6 +23,7 @@ toolchain/src/mono*
 toolchain/src/libffi*
 toolchain/src/glib*
 toolchain/src/zlib*
+toolchain/src/llvm*
 build/*
 .build/*
 python/*

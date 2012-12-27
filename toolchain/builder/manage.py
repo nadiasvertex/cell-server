@@ -1,7 +1,7 @@
 from copy import copy
 from glob import glob
 from fnmatch import fnmatch
-from paths import package_db
+from paths import package_db, set_build_paths
 
 import imp
 import os
@@ -60,7 +60,7 @@ class Manager(object):
          all_deps = all_deps.union(self.get_dependencies(dep))
       return all_deps
        
-   def build(self, packages):
+   def build(self, packages):      
       if not packages:      
          to_build = copy(self.packages)
       else:         
@@ -115,6 +115,13 @@ class Manager(object):
                drop.append(k)
                continue
    
+            for pattern in ("crosstool-*", "core-toolchain-*", "clang-*"):
+                if fnmatch(pkg_name, pattern):
+                    break
+            else:
+                print "Setting environment build variables"
+                set_build_paths()
+                
             print "Building %s" % pkg_name
             cur_dir = os.getcwd()
             try:         

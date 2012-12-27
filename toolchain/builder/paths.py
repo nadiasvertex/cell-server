@@ -18,6 +18,14 @@ toolchain_compiler = os.path.join(toolchain_platform_dir, "bin",
 toolchain_compiler_c = os.path.join(toolchain_platform_dir, "bin", 
                                     "x86_64-cell-linux-gnu-gcc")
 
+# The linker to use.
+toolchain_linker = os.path.join(toolchain_platform_dir, "bin", 
+                                    "x86_64-cell-linux-gnu-ld")
+# Where to look for libraries
+toolchain_lib_dir = os.path.join(toolchain_platform_dir, "lib")
+
+# Where to look for libraries
+toolchain_include_dir = os.path.join(toolchain_platform_dir, "include")
 
 # The database for package building.
 package_db = os.path.join(toolchain_dir, "packages.db")
@@ -25,3 +33,23 @@ package_db = os.path.join(toolchain_dir, "packages.db")
 # Update the path to provide access to the bindir
 os.environ["PATH"] +=":" + (":".join([os.path.join(toolchain_dir, "bin"),
                                       os.path.join(toolchain_platform_dir, "bin")]))
+
+def set_build_paths():    
+    os.environ["CC"] = toolchain_compiler_c
+    os.environ["CXX"] = toolchain_compiler
+    os.environ["LD"] = toolchain_linker 
+    os.environ["CFLAGS"] = "-I%s " % toolchain_include_dir
+    os.environ["LDFLAGS"] = "-L{lib_path} -Wl,-rpath,{lib_path} ".format(
+        lib_path = toolchain_lib_dir
+    )
+    
+def get_std_configure():
+    return " CC=%s CXX=%s LD=%s CFLAGS=%s LDFLAGS=%s " \
+           "--prefix=%s --disable-dependency-tracking " \
+           "--disable-shared --enable-static " %\
+          (toolchain_compiler_c,
+           toolchain_compiler,
+           toolchain_linker,
+           "'-I%s'" % toolchain_include_dir,
+           "'-L{lib_path} -Wl,-rpath,{lib_path}'".format(lib_path = toolchain_lib_dir),
+           toolchain_platform_dir)

@@ -1,5 +1,6 @@
 from builder.paths import toolchain_platform_dir, toolchain_src_dir
 from builder.paths import toolchain_compiler,toolchain_compiler_c
+from builder.paths import get_std_configure
 
 import os 
 
@@ -27,14 +28,11 @@ def build(mgr, package_name, version, status):
    os.chdir(build_dir)
 
    try:
-      os.environ["CC"] = toolchain_compiler_c
-      os.environ["CXX"] = toolchain_compiler
-      configure_cmd = "./configure --prefix=%s" %\
-          toolchain_platform_dir
+      configure_cmd = "./configure " + get_std_configure()
       if mgr.run(configure_cmd)!=0:
          return False
 
-      build_cmd = "make && make install"
+      build_cmd = "make clean && make && make install"
       if mgr.run(build_cmd)!=0:
          return False
      

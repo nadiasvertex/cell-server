@@ -28,9 +28,7 @@ def build(mgr, package_name, version, status):
 
    try:
       os.environ["CC"] = toolchain_compiler_c
-      os.environ["CFLAGS"] = "-I%s" % (os.path.join(toolchain_platform_dir, "include"))
-      os.environ["LDFLAGS"] = "-L%s" % (os.path.join(toolchain_platform_dir, "lib"))
-      configure_cmd = "./configure --prefix=%s" %\
+      configure_cmd = "./configure --prefix=%s --static" %\
           toolchain_platform_dir
       if mgr.run(configure_cmd)!=0:
          return False
