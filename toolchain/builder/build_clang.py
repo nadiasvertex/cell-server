@@ -51,7 +51,7 @@ def build(mgr, package_name, version, status):
 
    try:
       configure_cmd = build_dir + "/configure " + \
-                      get_std_configure(vars=False) + \
+                      get_std_configure(env_vars=False) + \
                       "--program-prefix=cell- --disable-docs "
       if mgr.run(configure_cmd) != 0:
          return False
