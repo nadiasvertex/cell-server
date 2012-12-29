@@ -2,36 +2,28 @@ from glob import glob
 import os
 import sys
 
-toolchain_path = os.path.join(os.getcwd(), "toolchain")
+import settings
+
+toolchain_path = settings.toolchain_dir
+compiler = settings.clang
 
 # libs = ['log4cxx', 'aprutil-1', 'expat', 'apr-1', 'zmq',
 #        'protobuf', 'jitplus', 'jit', 'pthread', 'rt']
 libs = []
 
 env = Environment(
-    CPPPATH=['toolchain/include', 'src/lib', 'build', 'tests', '.'],
+    CPPPATH=[settings.toolchain_include_dir,
+             os.path.join(settings.toolchain_include_dir, "mono-2.0"),
+             'src/lib', 'build', 'tests', '.'],
     tools=['default', 'protoc', 'mcs']
 )
 
-if sys.platform.startswith("win"):
-	Tool("mingw")(env)
-	mono_path = "c:\\program files (x86)\\mono-3.0.1"
-	mono_flags = "-mno-cygwin -mms-bitfields -mwindows"
-	mono_include = os.path.join(mono_path, "include", "mono-2.0")
-	mono_libs = ["mono-2.0", "ws2_32", "psapi", "ole32", "winmm", "oleaut32",
-	             "advapi32", "version"]
+mono_path = os.path.join(settings.toolchain_platform_dir, "bin", "cell-mono")
 
-	env.Replace(CCFLAGS=[])  # Fixes dumb mingw build bug
-	env.Append(PATH=";" + os.path.join(toolchain_path, "bin"))
-	env.Append(PATH=";" + os.path.join(mono_path, "bin"))
-	env.Replace(CSC='call "%s"' % os.path.join(mono_path, "bin", "mcs.bat"))
-else:
-	mono_path = "/usr/local/mono"
-	env.Append(PATH=":" + os.path.join(toolchain_path, "bin"))
-
-env.Append(CXXFLAGS='--with-arch=i686 -std=gnu++11 -O3 -g -I"' + mono_include + '"')
-env.Append(LIBPATH=['.', os.path.join(toolchain_path, "lib"),
-                    os.path.join(mono_path, "lib")])
+env.Append(PATH=":" + (":".join(settings.toolchain_bin_dirs)))
+env.Append(CXXFLAGS='-std=c++11 -O3 -g ' + compiler["CXXFLAGS"])
+env.Append(LIBPATH=['.', settings.toolchain_lib_dir])
+env.Replace(CXX=compiler["CXX"])
 
 if os.environ.has_key('TERM'):
 	env['ENV']['TERM'] = os.environ['TERM']

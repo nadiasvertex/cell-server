@@ -18,6 +18,12 @@ toolchain_lib_dir = os.path.join(toolchain_platform_dir, "lib")
 # Where to look for libraries
 toolchain_include_dir = os.path.join(toolchain_platform_dir, "include")
 
+# Where the system-specific toolchain is
+toolchain_bin_dirs = [
+  os.path.join(toolchain_dir, "bin"),
+  os.path.join(toolchain_platform_dir, "bin")
+]
+
 # The database for package building.
 package_db = os.path.join(toolchain_dir, "packages.db")
 

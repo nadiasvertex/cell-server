@@ -1,3 +1,4 @@
+#include <query/cpp/errors.h>
 #include <query/cpp/metadata.h>
 
 namespace cell {
@@ -16,12 +17,12 @@ metadata::table::add_column(const std::string& name, const data_type& type)
 }
       
 expected<bool>
-metadata::table::drop_column(const column_id& cid)
+metadata::table::drop_column(const engine::column_id& cid)
 {
 
 }
       
-expected<column_id> 
+expected<engine::column_id>
 metadata::table::column(const std::string& name)
 {
 

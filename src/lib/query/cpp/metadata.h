@@ -24,7 +24,7 @@ public:
    public:
       typedef std::unordered_map<std::string, engine::column_id> id_map_type;
       
-      typedef std::unordered_map<engine::column_id, data_type> column_map_type;
+      typedef std::unordered_map<engine::column_id, data_type, engine::column_id_hash> column_map_type;
       
    private:
       std::string name;      
@@ -33,16 +33,16 @@ public:
       
       column_map_type columns;
       
-      column_id generator;
+      engine::column_id generator;
       
    public:
       table(const std::string& _name):name(_name) {}      
       
       expected<bool> add_column(const std::string& name, const data_type& type);
       
-      expected<bool> drop_column(const column_id& cid);
+      expected<bool> drop_column(const engine::column_id& cid);
       
-      expected<column_id> column(const std::string& name);
+      expected<engine::column_id> column(const std::string& name);
    };
       
    class database
@@ -50,7 +50,7 @@ public:
    public:
       typedef std::unordered_map<std::string, engine::table_id> id_map_type;
       
-      typedef std::unordered_map<engine::table_id, table> table_map_type;
+      typedef std::unordered_map<engine::table_id, table, engine::table_id_hash> table_map_type;
    private:
       std::string name;
       
@@ -63,10 +63,10 @@ public:
       
       expected<bool> create_table(const std::string& name);
       
-      expected<bool> drop_table(const table_id& tid);
+      expected<bool> drop_table(const engine::table_id& tid);
       
-      expected<table_id> table(const std::string& name);
-   }
+      expected<engine::table_id> table(const std::string& name);
+   };
 
 };
 
