@@ -4,7 +4,7 @@ import sys
 
 toolchain_path = os.path.join(os.getcwd(), "toolchain")
 
-#libs = ['log4cxx', 'aprutil-1', 'expat', 'apr-1', 'zmq', 
+# libs = ['log4cxx', 'aprutil-1', 'expat', 'apr-1', 'zmq',
 #        'protobuf', 'jitplus', 'jit', 'pthread', 'rt']
 libs = []
 
@@ -14,14 +14,14 @@ env = Environment(
 )
 
 if sys.platform.startswith("win"):
-	Tool("mingw")(env)	
+	Tool("mingw")(env)
 	mono_path = "c:\\program files (x86)\\mono-3.0.1"
 	mono_flags = "-mno-cygwin -mms-bitfields -mwindows"
 	mono_include = os.path.join(mono_path, "include", "mono-2.0")
 	mono_libs = ["mono-2.0", "ws2_32", "psapi", "ole32", "winmm", "oleaut32",
 	             "advapi32", "version"]
-				 
-	env.Replace(CCFLAGS = []) # Fixes dumb mingw build bug
+
+	env.Replace(CCFLAGS=[])  # Fixes dumb mingw build bug
 	env.Append(PATH=";" + os.path.join(toolchain_path, "bin"))
 	env.Append(PATH=";" + os.path.join(mono_path, "bin"))
 	env.Replace(CSC='call "%s"' % os.path.join(mono_path, "bin", "mcs.bat"))
@@ -30,7 +30,7 @@ else:
 	env.Append(PATH=":" + os.path.join(toolchain_path, "bin"))
 
 env.Append(CXXFLAGS='--with-arch=i686 -std=gnu++11 -O3 -g -I"' + mono_include + '"')
-env.Append(LIBPATH=['.', os.path.join(toolchain_path, "lib"), 
+env.Append(LIBPATH=['.', os.path.join(toolchain_path, "lib"),
                     os.path.join(mono_path, "lib")])
 
 if os.environ.has_key('TERM'):
@@ -46,7 +46,7 @@ if os.environ.has_key('TERM'):
 # )
 
 # Query parser library
-env.Library("sql", glob("src/lib/query/cpp/*.cpp") +\
+env.Library("sql", glob("src/lib/query/cpp/*.cpp") + \
                    glob("src/lib/query/coco/*.cpp"))
 
 # Data engine library

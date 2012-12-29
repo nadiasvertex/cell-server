@@ -4,8 +4,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.getcwd(), "toolchain"))
 from builder.manage import Manager
-
-import argparse
+from builder.paths import write_settings_file
 
 parser = argparse.ArgumentParser(description='Build the cell server toolchain')
 parser.add_argument('--list', dest='list_pkgs', action='store_true',
@@ -34,7 +33,7 @@ if args.list_pkgs:
       print k.rjust(20), v[1].ljust(15),
       print ",".join(v[2]).rjust(40)
    sys.exit(0)
-   
+
 if args.rebuild_pkgs:
    pkg_names = [x.strip() for x in args.rebuild_pkgs.split(",")]
    for pkg_name in pkg_names:
@@ -43,8 +42,10 @@ if args.rebuild_pkgs:
          mgr.set_status(p[0] % p[1], "MISSING")
       else:
          print "Package '%s' is not in the toolchain index." % pkg_name
-   
-if mgr.build(args.build_pkgs)==False:
+
+if mgr.build(args.build_pkgs) == False:
    sys.exit(1)
+
+write_settings_file()
 
 print("Finished")

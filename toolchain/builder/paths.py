@@ -1,6 +1,8 @@
 import os
 import sys
 
+from pprint import pformat
+
 # Where the toolchain is
 toolchain_dir = os.path.join(os.getcwd(), "toolchain")
 
@@ -9,10 +11,6 @@ toolchain_platform_dir = os.path.join(toolchain_dir, sys.platform)
 
 # Where toolchain source resides in the repository
 toolchain_src_dir = os.path.join(toolchain_dir, "src")
-
-# The linker to use.
-# toolchain_linker = os.path.join(toolchain_platform_dir, "bin",
-#                                 "x86_64-cell-linux-gnu-ld")
 
 # Where to look for libraries
 toolchain_lib_dir = os.path.join(toolchain_platform_dir, "lib")
@@ -66,3 +64,15 @@ def get_std_configure(env_vars=True, compiler="clang"):
            ("--prefix=%s --disable-dependency-tracking " \
             "--disable-shared --enable-static " % \
                    toolchain_platform_dir)
+
+def write_settings_file():
+   with open("settings.py", "w") as out:
+      for compiler in ("clang", "gcc"):
+         d = get_compiler_options(compiler)
+         out.write("%s=" % compiler)
+         out.write(pformat(d))
+         out.write("\n")
+
+      for k, v in globals().iteritems():
+         if k.startswith("toolchain"):
+            out.write("%s=%s\n" % (k, pformat(v)))
