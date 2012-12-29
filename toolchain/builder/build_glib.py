@@ -35,7 +35,7 @@ def build(mgr, package_name, version, status):
    try:
       configure_cmd = "./configure " + \
                       ffi + zlib + \
-                      get_std_configure()
+                      get_std_configure(compiler="gcc")
       if mgr.run(configure_cmd) != 0:
          return False
 

@@ -10,21 +10,10 @@ toolchain_platform_dir = os.path.join(toolchain_dir, sys.platform)
 # Where toolchain source resides in the repository
 toolchain_src_dir = os.path.join(toolchain_dir, "src")
 
-# The c++ compiler for the toolchain
-toolchain_compiler = os.path.join(toolchain_platform_dir, "bin",
-                                  "x86_64-cell-linux-gnu-g++")
-
-# The c compiler for the toolchain
-toolchain_compiler_c = os.path.join(toolchain_platform_dir, "bin",
-                                    "x86_64-cell-linux-gnu-gcc")
-
-# The preprocessor for the toolchain
-toolchain_preprocessor = os.path.join(toolchain_platform_dir, "bin",
-                                    "x86_64-cell-linux-gnu-cpp")
-
 # The linker to use.
-toolchain_linker = os.path.join(toolchain_platform_dir, "bin",
-                                    "x86_64-cell-linux-gnu-ld")
+# toolchain_linker = os.path.join(toolchain_platform_dir, "bin",
+#                                 "x86_64-cell-linux-gnu-ld")
+
 # Where to look for libraries
 toolchain_lib_dir = os.path.join(toolchain_platform_dir, "lib")
 
@@ -38,27 +27,40 @@ package_db = os.path.join(toolchain_dir, "packages.db")
 os.environ["PATH"] += ":" + (":".join([os.path.join(toolchain_dir, "bin"),
                                       os.path.join(toolchain_platform_dir, "bin")]))
 
-def set_build_paths():
-   os.environ["CC"] = toolchain_compiler_c
-   os.environ["CXX"] = toolchain_compiler
-   os.environ["CPP"] = toolchain_preprocessor
-   os.environ["LD"] = toolchain_linker
-   os.environ["CFLAGS"] = "-I%s " % toolchain_include_dir
-   os.environ["CXXFLAGS"] = "-I%s " % toolchain_include_dir
-   os.environ["LDFLAGS"] = "-L{lib_path} -Wl,-rpath,{lib_path} ".format(
+def get_compiler_options(which="clang"):
+   d = {}
+   if which == "clang":
+      d["CXX"] = os.path.join(toolchain_platform_dir, "bin",
+                              "cell-clang++")
+      d["CC"] = os.path.join(toolchain_platform_dir, "bin",
+                              "cell-clang")
+      d["CFLAGS"] = "-I%s -target x86_64-cell-linux" % toolchain_include_dir
+      d["CXXFLAGS"] = d["CFLAGS"]
+   else:
+      d["CXX"] = "g++"
+      d["CC"] = "gcc"
+      d["CFLAGS"] = "-I%s" % toolchain_include_dir
+      d["CXXFLAGS"] = d["CFLAGS"]
+
+   d["CXXCPP"] = "/usr/bin/cpp"
+   d["CPP"] = "/usr/bin/cpp"
+   d["LD"] = "ld"
+   d["LDFLAGS"] = "-L{lib_path} -Wl,-rpath,{lib_path} ".format(
        lib_path=toolchain_lib_dir
    )
+   return d
 
-def get_std_configure(vars=True):
-   config = " CC=%s CXX=%s CPP=%s LD=%s CFLAGS=%s CXXFLAGS=%s LDFLAGS=%s " % \
-               (toolchain_compiler_c,
-                toolchain_compiler,
-                toolchain_preprocessor,
-                toolchain_linker,
-                "'-I%s'" % toolchain_include_dir,
-                "'-I%s'" % toolchain_include_dir,
-                "'-L{lib_path} -Wl,-rpath,{lib_path}'".format(lib_path=toolchain_lib_dir)) \
-   if vars else ""
+def set_build_paths():
+   d = get_compiler_options("gcc")
+   for k, v in d.iteritems():
+      os.environ[k] = v
+
+def get_std_configure(env_vars=True, compiler="clang"):
+   config = ""
+   if env_vars:
+      d = get_compiler_options(compiler)
+      for k, v in d.iteritems():
+         config += ("%s='%s' " % (k, v))
 
    return  config + \
            ("--prefix=%s --disable-dependency-tracking " \

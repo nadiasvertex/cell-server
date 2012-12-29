@@ -1,13 +1,12 @@
 from builder.paths import toolchain_platform_dir, toolchain_src_dir
-from builder.paths import toolchain_compiler,toolchain_compiler_c
 
-import os 
+import os
 
 __version__ = "1.2.7"
 __pakname__ = "zlib-%s"
 __depends__ = ["core-toolchain-*"]
 
-def build(mgr, package_name, version, status):   
+def build(mgr, package_name, version, status):
    # Package is missing entirely.
    if status == "MISSING":
       url = 'http://zlib.net/zlib-%s.tar.bz2' % version
@@ -15,11 +14,11 @@ def build(mgr, package_name, version, status):
       mgr.fetch(url, archive)
 
       extract_cmd = "tar -xjf %s --directory %s" % (archive, toolchain_src_dir)
-      if mgr.run(extract_cmd)!=0:
+      if mgr.run(extract_cmd) != 0:
          return False
 
       os.unlink(archive)
-      mgr.set_status(package_name, "SOURCE")  
+      mgr.set_status(package_name, "SOURCE")
 
    # Package is present in source form, and needs compiling
    build_dir = os.path.join(toolchain_src_dir, package_name)
@@ -27,14 +26,13 @@ def build(mgr, package_name, version, status):
    os.chdir(build_dir)
 
    try:
-      os.environ["CC"] = toolchain_compiler_c
-      configure_cmd = "./configure --prefix=%s --static" %\
+      configure_cmd = "./configure --prefix=%s --static --64" % \
           toolchain_platform_dir
-      if mgr.run(configure_cmd)!=0:
+      if mgr.run(configure_cmd) != 0:
          return False
 
-      build_cmd = "make && make install"
-      if mgr.run(build_cmd)!=0:
+      build_cmd = "make clean && make && make install"
+      if mgr.run(build_cmd) != 0:
          return False
    finally:
       os.chdir(cur_dir)

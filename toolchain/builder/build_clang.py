@@ -1,5 +1,4 @@
-from builder.paths import toolchain_platform_dir, toolchain_src_dir
-from builder.paths import toolchain_compiler, toolchain_compiler_c
+from builder.paths import toolchain_src_dir
 from builder.paths import get_std_configure
 
 import os
@@ -39,15 +38,15 @@ def build(mgr, package_name, version, status):
    # Package is present in source form, and needs compiling
    build_dir = os.path.join(toolchain_src_dir, "llvm-%s" % version)
    if os.path.exists("%s.src" % build_dir):
-       rn_cmd = "mv %s.src %s" % (build_dir, build_dir)
-       if mgr.run(rn_cmd) != 0:
-           return False
+      rn_cmd = "mv %s.src %s" % (build_dir, build_dir)
+      if mgr.run(rn_cmd) != 0:
+         return False
 
    build_from_dir = os.path.join(toolchain_src_dir, "llvm-build-%s" % version)
    cur_dir = os.getcwd()
 
    if not os.path.exists(build_from_dir):
-       os.makedirs(build_from_dir)
+      os.makedirs(build_from_dir)
    os.chdir(build_from_dir)
 
    try:
