@@ -9,7 +9,7 @@ compiler = settings.clang
 
 # libs = ['log4cxx', 'aprutil-1', 'expat', 'apr-1', 'zmq',
 #        'protobuf', 'jitplus', 'jit', 'pthread', 'rt']
-libs = []
+libs = ["pthread"]
 
 env = Environment(
     CPPPATH=[settings.toolchain_include_dir,
