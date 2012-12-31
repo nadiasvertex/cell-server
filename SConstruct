@@ -1,6 +1,5 @@
 from glob import glob
 import os
-import sys
 
 import settings
 
@@ -26,15 +25,15 @@ env.Append(LIBPATH=['.', settings.toolchain_lib_dir])
 env.Replace(CXX=compiler["CXX"])
 
 if os.environ.has_key('TERM'):
-	env['ENV']['TERM'] = os.environ['TERM']
+   env['ENV']['TERM'] = os.environ['TERM']
 
 # proto = env.Protoc(
-	   # [],
-	   # glob("src/lib/edge/proto/*.proto") +\
-       # glob("src/lib/processor/proto/*.proto")+\
-       # glob("src/lib/cell/proto/*.proto"),
-	   # PROTOCPROTOPATH=["src/lib"],
-	   # PROTOCOUTDIR="build"
+   # [],
+   # glob("src/lib/edge/proto/*.proto") +\
+   # glob("src/lib/processor/proto/*.proto")+\
+   # glob("src/lib/cell/proto/*.proto"),
+   # PROTOCPROTOPATH=["src/lib"],
+   # PROTOCOUTDIR="build"
 # )
 
 # Query parser library
@@ -46,19 +45,14 @@ env.Library("data_engine", glob("src/lib/data_engine/cpp/*.cpp"))
 env.CLILibrary("data_engine_framework", glob("src/lib/data_engine/cs/*.cs"),
 			   CILLIBS=["Mono.CSharp"])
 
-# Plane library
-# env.Library("plane", glob("src/lib/plane/cpp/*.cpp"))
-# Cell library
-# env.Library("cell", glob("build/cell/proto/*.cc")+ \
-                    # glob("src/lib/cell/cpp/*.cpp"))
 # Processor library
 # env.Library("processor", glob("build/processor/proto/*.cc")+\
-                         # glob("src/lib/processor/cpp/*.cpp"))
+                           # glob("src/lib/processor/cpp/*.cpp"))
 
 # Group server
 # env.Program("group",
             # glob("src/group/*.cpp"),
-       # LIBS=['plane', 'edge', 'cell', 'processor'] + libs
+            # LIBS=['plane', 'edge', 'cell', 'processor'] + libs
 # )
 
 # Unit tests
