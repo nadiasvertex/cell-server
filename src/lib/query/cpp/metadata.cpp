@@ -23,10 +23,12 @@ expected<bool> metadata::table::add_column(const std::string& name,
 
 expected<bool> metadata::table::drop_column(const engine::column_id& cid) {
 
+	return false;
+
 }
 
 expected<engine::column_id> metadata::table::column(const std::string& name) {
-
+	return engine::column_id();
 }
 
 expected<bool> metadata::create_database(const std::string& name) {
