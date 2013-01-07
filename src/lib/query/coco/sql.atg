@@ -1,0 +1,319 @@
+#include <memory>
+#include <stack>
+#include <vector>
+#include <query/cpp/sql_ast.h>
+
+COMPILER SQL
+
+public:
+   typedef std::shared_ptr<query> query_handle_type ;
+   typedef std::vector<query_handle_type> query_list_type;
+   query_list_type queries;
+   
+private:   
+   /** Holds our select queries. We may have nested sub selects, so we
+    * need to be able to keep track of them. */
+   std::stack<select*> sq_stack;
+   
+public:
+
+/*******************************************************************************
+ *  Character Class Descriptions
+ *******************************************************************************/
+
+CHARACTERS
+
+tab         = '\u0009'.
+eol         = '\u000a'.             /* 10 = line feed */
+cr          = '\u000d'.             /* 13 = carriage return */
+new_line    = cr + eol.
+digit       = "0123456789".         /* the set of all digits */
+hex_digit   = digit + "ABCDEF".     /* the set of all hexadecimal digits */
+letter      = 'A' .. 'Z'.           /* the set of all upper case letters */
+quoted_char = ANY - '"' - new_line. /* the set of all characters available for
+                                       quoted names. */
+
+/*******************************************************************************
+ *  Scanner Description
+ *******************************************************************************/
+ 
+TOKENS
+
+hex_integer = "0x" hex_digit {hex_digit}.
+integer     = digit {digit}.
+decimal     = digit {digit} '.' {digit} ['E' ['+'|'-'] digit {digit}].
+name        = letter {letter | digit | '_'}.
+quoted_name = '"' quoted_char '"'.
+
+COMMENTS FROM "/*" TO "*/"
+COMMENTS FROM "--" TO eol
+IGNORE eol + cr + tab
+
+/*******************************************************************************
+ *  Grammar Productions
+ *******************************************************************************/
+ 
+PRODUCTIONS
+
+SQL          = 
+ Select                                          (. queries.push_back(
+                                                      query_handle_type(
+                                                         sq_stack.top()
+                                                      )
+                                                    ); sq_stack.pop();
+                                                    
+                                                    if (sq_stack.size())
+                                                    {
+                                                      errors->Error(t->line, t->col, 
+                                                      L"internal error: select stack not "
+                                                      L"empty at this point.");
+                                                    }
+                                                                                             .)
+';'.
+
+
+Select       = "SELECT"                          (. sq_stack.push(
+                                                      new sql::select(
+                                                       sq_stack.size() > 0 ? sq_stack.top() : nullptr
+                                                      )
+                                                    ); 
+                                                    
+                                                    select::expr_handle_type e;               .)
+                                                    
+              SelectExpr<e>                      (. sq_stack.top()->add_select_expression(e); .)                  
+               {',' SelectExpr<e>                (. sq_stack.top()->add_select_expression(e); .)
+               }
+.                                                 
+             
+SelectExpr<select::expr_handle_type &e>   = '*' 
+                                 | Expression<e>
+.
+
+
+Expression<select::expr_handle_type &e>   = 
+  AndCondition<e> 
+  { 
+    "OR"                                         (. select::expr_handle_type r;                          .)
+    AndCondition<r>                              (. e = select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                             type::BOOL, L"OR", e, r
+                                                            )
+                                                    );  
+                                                                                              .)   
+  }
+.
+
+AndCondition<select::expr_handle_type &e> = 
+  Condition<e> 
+  { 
+   "AND"                                         (. select::expr_handle_type r;                          .)
+   Condition<r>                                  (. e = select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                              type::BOOL, L"AND", e, r
+                                                            )
+                                                    );                                        .)
+  }
+.
+Condition<select::expr_handle_type &e>    = 
+   Operand<e>  
+   {                                             (. select::expr_handle_type r;                          .)
+     ConditionRhs<e, r>                          (. e = r;                                    .)    
+   } 
+ | "NOT" Condition<e>                            (. e = select::expr_handle_type(
+                                                           new select::unary_expr(
+                                                             type::BOOL, L"NOT", e
+                                                           )
+                                                    );                                        .)
+ | "EXISTS" 
+   '(' 
+       Select                                     (. e = select::expr_handle_type(
+                                                           new select::unary_expr(
+                                                             type::BOOL, L"EXISTS", 
+                                                             select::expr_handle_type(
+                                                                new select::sub_select_expr(
+                                                                  sq_stack.top()
+                                                                )
+                                                             )
+                                                           )
+                                                     ); sq_stack.pop();                       .) 
+   ')'
+.
+
+ConditionRhs<select::expr_handle_type l, select::expr_handle_type &e> =                 
+   (Compare                                      (. std::wstring op(t->val);                  .)
+      (  Operand<e>                              (. e = select::expr_handle_type(
+                                                           new select::binary_expr(
+                                                             type::BOOL, op, l, e
+                                                           )
+                                                    );                                        .)
+       | ("ALL" | "ANY" | "SOME")                (. std::wstring query_op(t->val);            .)  
+         '('                                     
+            Select                               (. e = select::expr_handle_type(
+                                                           new select::unary_expr(
+                                                             type::BOOL, op, 
+                                                             select::expr_handle_type(
+                                                               new select::sub_select_expr(
+                                                                  sq_stack.top()
+                                                               )
+                                                             )
+                                                           )
+                                                     ); sq_stack.pop();                       .)
+         ')' 
+      ) 
+   )
+ | ("IS"                                         (. bool is_not = false; 
+                                                    bool distinct_from = false;               .) 
+    [
+     "NOT"                                       (. is_not = true;                            .)
+    ] 
+    ( "NULL"                                     (. e = select::expr_handle_type(
+                                                          new select::binary_expr(
+                                                              type::BOOL,
+                                                              L"IS", 
+                                                              l, 
+                                                              select::expr_handle_type(
+                                                                   new select::null_expr()
+                                                              )
+                                                          )
+                                                    );  
+                                                    if (is_not)
+                                                    {
+                                                     e = select::expr_handle_type(
+                                                            new select::unary_expr(
+                                                               type::BOOL, L"NOT", e
+                                                            )
+                                                     );
+                                                    }                                        .)                     
+     | [
+         "DISTINCT" "FROM"                       (. distinct_from = true;                    .)
+       ] 
+       Operand<e>                                (.
+                                                    e = select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                              type::BOOL,
+                                                              distinct_from    ?
+                                                              L"DISTINCT_FROM" :
+                                                              L"IS",
+                                                              l, e
+                                                            )
+                                                    );                                                    
+                                                    if (is_not)
+                                                    {
+                                                      e = select::expr_handle_type(
+                                                            new select::unary_expr(
+                                                              L"NOT", e
+                                                            )
+                                                      );
+                                                    }
+                                                                                             .)
+     )
+   )
+ | ("BETWEEN"                                    (. select::expr_handle_type mi, ma;         .)
+     Operand<mi> "AND" Operand<ma>               (.
+                                                   e = select::expr_handle_type(
+                                                      new select::binary_expr(
+                                                         type::BOOL,
+                                                         L"AND",
+                                                         select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                                  type::BOOL, L">=", l, mi
+                                                            )
+                                                         ),
+                                                         select::expr_handle_type(
+                                                            new select::binary_expr(
+                                                               type::BOOL, L"<=", l, ma
+                                                            )
+                                                         )
+                                                      )
+                                                   ); 
+                                                                                              .)      
+   )
+ | ("IN" 
+    '(' 
+       (Select                                   (. e = select::expr_handle_type(
+                                                            new select::sub_select_expr(
+                                                               sq_stack.top()
+                                                            )
+                                                    ); sq_stack.pop();                        .)
+                                                    
+       | Expression<e>                           (. auto *le = new select::list_expr();
+                                                    le->add_expression(e);
+                                                    e = select::expr_handle_type(le);                                   .)
+          {
+            ','                                  (. select::expr_handle_type en;              .)
+            Expression<en>                       (. le->add_expression(en);                   .)         
+          }
+       ) 
+    ')'
+   )
+.
+
+Compare      = "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=".
+
+Operand<select::expr_handle_type &e>      = 
+  Summand<e> 
+  {
+   "||"                                          (. select::expr_handle_type r;               .)
+   Summand<r>                                    (. e = select::expr_handle_type(
+                                                         new select::binary_expr(L"||", e, r));          .)
+  }
+.
+
+Summand<select::expr_handle_type &e>      = 
+  Factor<e> 
+  {
+   ('+' | '-')                                   (. select::expr_handle_type r; std::wstring op(t->val);  .)
+   Factor<r>                                     (. e = select::expr_handle_type(
+                                                         new select::binary_expr(op, e, r));              .)
+  }
+.
+
+Factor<select::expr_handle_type &e>       = 
+  Term<e> 
+  {
+   ('*' | '/' | '%')                             (. select::expr_handle_type r; std::wstring op(t->val);  .)
+   Term<r>                                       (. e = select::expr_handle_type(
+                                                         new select::binary_expr(op, e, r));              .)
+  }
+.
+
+Term<select::expr_handle_type &e>        =                  
+  Value<e>                                       
+| ( 
+    '('  Expression<e> ')'           
+    | Select                                     (. e = select::expr_handle_type(
+                                                            new select::sub_select_expr(
+                                                               sq_stack.top()
+                                                            )
+                                                      ); sq_stack.pop();                       .)
+  )
+.
+
+Value<select::expr_handle_type &v>       =      (. select::numeric_expr *nv; 
+                                                   bool negate = false;                        .)
+  [
+      '+' 
+    | '-'                                        (. negate = true;                             .)
+  ]
+  Numeric<nv>                                    (. if (negate)
+                                                    {
+                                                      v = select::expr_handle_type(
+                                                            new select::unary_expr(
+                                                               L"NEG", 
+                                                               select::expr_handle_type(nv)
+                                                            )
+                                                      );
+                                                    }
+                                                    else
+                                                    {
+                                                      v = select::expr_handle_type(nv);
+                                                    }                                          .)
+.
+
+Numeric<select::numeric_expr *&nv>  = 
+  decimal                                        (. nv = new select::numeric_expr(t->val, 10, true);  .)
+| hex_integer                                    (. nv = new select::numeric_expr(t->val, 16, false); .)
+| integer                                        (. nv = new select::numeric_expr(t->val, 10, false); .)
+.
+
+END SQL.
