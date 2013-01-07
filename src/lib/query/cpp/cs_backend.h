@@ -19,6 +19,7 @@ class cs_backend
    bool generate_binary_expr(sql::select::binary_expr *b);
    bool generate_unary_expr(sql::select::unary_expr *u);
    bool generate_value_expr(sql::select::value_expr *v);
+
 public:
    cs_backend(sql_parser &_p);
    ~cs_backend();
