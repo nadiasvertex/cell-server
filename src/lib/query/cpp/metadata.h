@@ -51,7 +51,7 @@ public:
 			return tbl_name;
 		}
 
-		const column_map_type& column_map() const {
+		column_map_type& column_map() {
 			return columns;
 		}
 
@@ -75,6 +75,8 @@ public:
 
 		table_map_type tables;
 
+		engine::table_id generator;
+
 	public:
 		database(const std::string& _name) :
 				db_name(_name) {
@@ -90,7 +92,7 @@ public:
 
 		expected<engine::table_id> table(const std::string& name);
 
-		const table_map_type& table_map() const {
+		table_map_type& table_map() {
 			return tables;
 		}
 
@@ -123,7 +125,7 @@ public:
 
 	expected<query::database_id> db(const std::string& name);
 
-	const db_map_type& database_map() const {
+	db_map_type& database_map() {
 		return databases;
 	}
 
