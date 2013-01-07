@@ -61,7 +61,7 @@ public:
 	};
 
 	//==---------------------------------------------------------------------==//
-
+public:
 	class database {
 	public:
 		typedef std::unordered_map<std::string, engine::table_id> id_map_type;
@@ -69,7 +69,7 @@ public:
 		typedef std::unordered_map<engine::table_id, table,
 				engine::table_id_hash> table_map_type;
 	private:
-		std::string name;
+		std::string db_name;
 
 		id_map_type table_ids;
 
@@ -77,14 +77,26 @@ public:
 
 	public:
 		database(const std::string& _name) :
-				name(_name) {
+				db_name(_name) {
 		}
 
 		expected<bool> create_table(const std::string& name);
 
 		expected<bool> drop_table(const engine::table_id& tid);
 
+		const std::string& name() const {
+			return db_name;
+		}
+
 		expected<engine::table_id> table(const std::string& name);
+
+		const table_map_type& table_map() const {
+			return tables;
+		}
+
+		const id_map_type& table_name_map() const {
+			return table_ids;
+		}
 	};
 
 	typedef std::unordered_map<std::string, query::database_id> id_map_type;
@@ -109,11 +121,15 @@ public:
 
 	expected<bool> drop_database(const query::database_id& did);
 
-	expected<query::database_id> database(const std::string& name);
+	expected<query::database_id> db(const std::string& name);
 
-	const db_map_type& database_map() { return databases; }
+	const db_map_type& database_map() const {
+		return databases;
+	}
 
-	const id_map_type& database_name_map() { return database_ids; }
+	const id_map_type& database_name_map() const {
+		return database_ids;
+	}
 
 };
 

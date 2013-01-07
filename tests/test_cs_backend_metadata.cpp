@@ -23,5 +23,6 @@ TEST(CsBackendMetadataTest, CanGenerate)
    metadata m;
    cs_backend_metadata csm(m);
    
+   csm.generate();
 
 }

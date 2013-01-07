@@ -11,13 +11,17 @@ class cs_backend_metadata
 
    const metadata& m;
 
-   bool generate_table(const metadata::table& t);
+   void generate_table(const metadata::table& t);
+   void generate_database(const metadata::database& d);
+   void generate_type(const data_type& t);
+
 public:
    cs_backend_metadata(const metadata& _m);
    ~cs_backend_metadata();
    
+
    /** Generates the C# code for the metadata. */
-   bool generate();
+   void generate();
    
 };
 

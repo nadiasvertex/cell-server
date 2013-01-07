@@ -28,7 +28,13 @@ expected<bool> metadata::table::drop_column(const engine::column_id& cid) {
 }
 
 expected<engine::column_id> metadata::table::column(const std::string& name) {
-	return engine::column_id();
+	auto pos = column_ids.find(name);
+	if (pos == column_ids.end()) {
+		return expected<engine::column_id>::from_exception(
+				unknown_column_error(this->tbl_name, name));
+	}
+
+	return pos->second;
 }
 
 expected<bool> metadata::create_database(const std::string& name) {
@@ -47,11 +53,11 @@ expected<bool> metadata::create_database(const std::string& name) {
 }
 
 expected<bool> metadata::drop_database(const query::database_id& did) {
-
+	return false;
 }
 
-expected<query::database_id> metadata::database(const std::string& name) {
-
+expected<query::database_id> metadata::db(const std::string& name) {
+	return query::database_id();
 }
 
 } // end namespace query

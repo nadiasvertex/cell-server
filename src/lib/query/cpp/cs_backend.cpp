@@ -37,35 +37,35 @@ cs_backend::~cs_backend() {
 void cs_backend::generate_type(const sql::type& t) {
 	switch (t) {
 	case sql::type::BOOL:
-		s << L"bool";
+		s << "bool";
 		break;
 
 	case sql::type::TINYINT:
-		s << L"char";
+		s << "char";
 		break;
 
 	case sql::type::SMALLINT:
-		s << L"short";
+		s << "short";
 		break;
 
 	case sql::type::INT:
-		s << L"int";
+		s << "int";
 		break;
 
 	case sql::type::BIGINT:
-		s << L"long";
+		s << "long";
 		break;
 
 	case sql::type::FLOAT:
-		s << L"float";
+		s << "float";
 		break;
 
 	case sql::type::DOUBLE:
-		s << L"double";
+		s << "double";
 		break;
 
 	case sql::type::VARCHAR:
-		s << L"string";
+		s << "string";
 		break;
 	}
 }
