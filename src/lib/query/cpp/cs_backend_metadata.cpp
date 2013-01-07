@@ -4,7 +4,7 @@
 namespace cell {
 namespace query {
 
-cs_backend_metadata::cs_backend_metadata(const metadata& _m) :
+cs_backend_metadata::cs_backend_metadata(metadata& _m) :
 		m(_m) {
 
 }
@@ -48,30 +48,30 @@ void cs_backend_metadata::generate_type(const data_type& t) {
 	}
 }
 
-void cs_backend_metadata::generate_table(const metadata::table& t) {
-	s << "public class " << t.name().c_str() << "{" << std::endl;
+void cs_backend_metadata::generate_table(metadata::table& t) {
+	s << "\t\tpublic class " << t.name().c_str() << " {" << std::endl;
 	for (const auto& col : t.column_name_map()) {
 		const auto& name = col.first;
 		const auto& id = col.second;
 		const auto& type = t.column_map().find(id)->second;
 
-		s << "\tpublic ";
+		s << "\t\t\tpublic ";
 		generate_type(type);
-		s << " " << name.c_str() << std::endl;
+		s << " " << name.c_str() << ";" << std::endl;
 	}
-	s << "}" << std::endl;
+	s << "\t\t}" << std::endl;
 }
 
-void cs_backend_metadata::generate_database(const metadata::database& d) {
-	s << "public class " << d.name().c_str() << "{" << std::endl;
+void cs_backend_metadata::generate_database(metadata::database& d) {
+	s << "\tpublic class " << d.name().c_str() << " {" << std::endl;
 	for (const auto& t : d.table_name_map()) {
 		const auto& name = t.first;
 		const auto& id = t.second;
-		const auto& tbl = d.table_map().find(id)->second;
+		auto& tbl = d.table_map().find(id)->second;
 
 		generate_table(tbl);
 	}
-	s << "}" << std::endl;
+	s << "\t}" << std::endl;
 }
 
 void cs_backend_metadata::generate() {
@@ -79,11 +79,13 @@ void cs_backend_metadata::generate() {
 	for (const auto& db : m.database_name_map()) {
 		const auto& name = db.first;
 		const auto& id = db.second;
-		const auto& d = m.database_map().find(id)->second;
+		auto& d = m.database_map().find(id)->second;
 
 		generate_database(d);
 	}
 	s << "}" << std::endl;
+
+	std::wcout << s.str();
 }
 
 } // end namespace query

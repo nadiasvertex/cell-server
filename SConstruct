@@ -20,7 +20,7 @@ env = Environment(
 mono_path = os.path.join(settings.toolchain_platform_dir, "bin", "cell-mono")
 
 env.Append(PATH=":" + (":".join(settings.toolchain_bin_dirs)))
-env.Append(CXXFLAGS='-std=c++11 -O3 -g ' + compiler["CXXFLAGS"])
+env.Append(CXXFLAGS='-std=c++11 -g ' + compiler["CXXFLAGS"])
 env.Append(LIBPATH=['.', settings.toolchain_lib_dir])
 env.Replace(CXX=compiler["CXX"])
 
