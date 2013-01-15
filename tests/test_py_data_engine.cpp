@@ -19,3 +19,30 @@ TEST(PyEngineTest, CanImportNativeDataEngine)
 
    ASSERT_TRUE(e.exec("import native_data_engine"));
 }
+
+TEST(PyEngineTest, CanCreateColumn)
+{
+   cell::engine::py_engine e;
+
+   ASSERT_TRUE(e.exec("import native_data_engine;"
+                      "t=native_data_engine.Column(data_type=0, default=0)"));
+}
+
+TEST(PyEngineTest, CanInsert)
+{
+   cell::engine::py_engine e;
+
+   ASSERT_TRUE(e.exec("import native_data_engine;"
+                      "t=native_data_engine.Column(data_type=0, default=0);"
+                      "t.insert(10);"));
+}
+
+TEST(PyEngineTest, CanErase)
+{
+   cell::engine::py_engine e;
+
+   ASSERT_TRUE(e.exec("import native_data_engine;"
+                      "t=native_data_engine.Column(data_type=0, default=0);"
+                      "id=t.insert(10);"
+                      "t.erase(id)"));
+}
