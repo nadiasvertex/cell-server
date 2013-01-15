@@ -8,7 +8,7 @@ compiler = settings.clang
 
 # libs = ['log4cxx', 'aprutil-1', 'expat', 'apr-1', 'zmq',
 #        'protobuf', 'jitplus', 'jit', 'pthread', 'rt']
-libs = ["pthread"]
+libs = ["python3.3m", "pthread"]
 
 env = Environment(
     CPPPATH=[settings.toolchain_include_dir,
@@ -21,7 +21,9 @@ mono_path = os.path.join(settings.toolchain_platform_dir, "bin", "cell-mono")
 
 env.Append(PATH=":" + (":".join(settings.toolchain_bin_dirs)))
 env.Append(CXXFLAGS='-std=c++11 -g ' + compiler["CXXFLAGS"])
-env.Append(LIBPATH=['.', settings.toolchain_lib_dir])
+env.Append(CPPPATH='/usr/include/python3.3m')
+env.Append(LIBPATH=['.', settings.toolchain_lib_dir,
+                    '/usr/include/python3.3/config-3.3m'])
 env.Replace(CXX=compiler["CXX"])
 
 if os.environ.has_key('TERM'):

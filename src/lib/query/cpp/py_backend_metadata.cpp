@@ -1,21 +1,21 @@
 #include <iostream>
-#include <query/cpp/cs_backend_metadata.h>
+#include <query/cpp/py_backend_metadata.h>
 
 namespace cell {
 namespace query {
 
-cs_backend_metadata::cs_backend_metadata(metadata& _m)
+py_backend_metadata::py_backend_metadata(metadata& _m)
       :
             m(_m)
 {
 
 }
 
-cs_backend_metadata::~cs_backend_metadata()
+py_backend_metadata::~py_backend_metadata()
 {
 }
 
-void cs_backend_metadata::generate_type(const data_type& t)
+void py_backend_metadata::generate_type(const data_type& t)
 {
    switch (t.k)
       {
@@ -57,36 +57,35 @@ void cs_backend_metadata::generate_type(const data_type& t)
       }
 }
 
-void cs_backend_metadata::generate_table(metadata::table& t)
+void py_backend_metadata::generate_table(metadata::table& t)
 {
-   s << "\t\tpublic class " << t.name().c_str() << " : itable {" << std::endl;
+   s << "class " << t.name().c_str() << "(object):" << std::endl;
+   s << "\t__slots__=[";
    for (const auto& col : t.column_name_map())
       {
       const auto& name = col.first;
       const auto& id = col.second;
-      const auto& type = t.column_map().find(id)->second;
-
-      s << "\t\t\tpublic ";
-      generate_type(type);
-      s << " " << name.c_str() << ";" << std::endl;
+      //const auto& type = t.column_map().find(id)->second;
+      s << "'" << name.c_str() << "',";
       }
+   s << "]" << std::endl;
 
-   s << "\t\t\tpublic ifilter filter(Func<" << t.name().c_str() <<  ", bool> expr) {" << std::endl;
-   s << "\t\t\t\texpr_list.Add(expr);" << std::endl;
-   s << "\t\t\t}" << std::endl;
-   s << "\t\t\tList<System.Linq.Expressions.Expression> expr_list;" << std::endl;
-   s << "\t\t}" << std::endl;
+   s << "\tcol_map={";
+      for (const auto& col : t.column_name_map())
+         {
+         const auto& name = col.first;
+         const auto& id = col.second;
+         s << "'" << name.c_str() << "':" <<  id.as_uint64() << ",";
+         }
+      s << "}" << std::endl;
+
+   s<< "# end table " << t.name().c_str() << std::endl;
 }
 
-void cs_backend_metadata::generate_database(metadata::database& d)
+void py_backend_metadata::generate_database(metadata::database& d)
 {
-   s << "\tnamespace " << d.name().c_str() << " {" << std::endl;
-   s << "\t\tpublic class database : idatabase {" << std::endl;
-   s << "\t\t\tpublic static string name {" << std::endl;
-   s << "\t\t\t\tget { return \"" << d.name().c_str() << "\"; }" << std::endl;
-   //s << "\t\t\t\tset { }" << std::endl;
-   s << "\t\t\t}" << std::endl;
-   s << "\t\t}" << std::endl;
+   s << "from cell.query import filter" << std::endl;
+   s << "name = \"" << d.name().c_str() << "\"" << std::endl;
    for (const auto& t : d.table_name_map())
       {
       const auto& name = t.first;
@@ -95,13 +94,10 @@ void cs_backend_metadata::generate_database(metadata::database& d)
 
       generate_table(tbl);
       }
-   s << "\t}" << std::endl;
 }
 
-void cs_backend_metadata::generate()
+void py_backend_metadata::generate()
 {
-   s << "using System;" << std::endl;
-   s << "namespace schema {" << std::endl;
    for (const auto& db : m.database_name_map())
       {
       const auto& name = db.first;
@@ -110,7 +106,6 @@ void cs_backend_metadata::generate()
 
       generate_database(d);
       }
-   s << "}" << std::endl;
 
    std::wcout << s.str();
 }
