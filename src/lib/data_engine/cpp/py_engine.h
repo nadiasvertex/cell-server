@@ -22,9 +22,9 @@ public:
       Py_Finalize();
    }
 
-   void exec(const std::string& script)
+   bool exec(const std::string& script)
    {
-      PyRun_SimpleString(script.c_str());
+      return PyRun_SimpleString(script.c_str()) == 0;
    }
 
 };
