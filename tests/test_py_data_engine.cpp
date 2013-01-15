@@ -12,3 +12,10 @@ TEST(PyEngineTest, CanCreate)
          e =std::unique_ptr<cell::engine::py_engine>(
          new cell::engine::py_engine()));
 }
+
+TEST(PyEngineTest, CanImportNativeDataEngine)
+{
+   cell::engine::py_engine e;
+
+   ASSERT_TRUE(e.exec("import native_data_engine"));
+}
