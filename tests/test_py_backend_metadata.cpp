@@ -1,49 +1,49 @@
 #include <cstdint>
 #include <memory>
 
-#include <query/cpp/cs_backend_metadata.h>
+#include <query/cpp/py_backend_metadata.h>
 
 #include <gtest/gtest.h>
 
-TEST(CsBackendMetadataTest, CanCreate)
+TEST(PyBackendMetadataTest, CanCreate)
 {
    using namespace cell::query;
 
    metadata m;
    
-   std::unique_ptr<cs_backend_metadata> csm;
+   std::unique_ptr<py_backend_metadata> csm;
    ASSERT_NO_THROW(
-         csm =std::unique_ptr<cs_backend_metadata>( new cs_backend_metadata(m)));
+         csm =std::unique_ptr<py_backend_metadata>( new py_backend_metadata(m)));
 }
 
-TEST(CsBackendMetadataTest, CanGenerate)
+TEST(PyBackendMetadataTest, CanGenerate)
 {
    using namespace cell::query;
    
    metadata m;
-   cs_backend_metadata csm(m);
+   py_backend_metadata csm(m);
    
    csm.generate();
 }
 
-TEST(CsBackendMetadataTest, CanGenerateDb)
+TEST(PyBackendMetadataTest, CanGenerateDb)
 {
    using namespace cell::query;
 
    metadata m;
-   cs_backend_metadata csm(m);
+   py_backend_metadata csm(m);
 
    m.create_database("testdb");
 
    csm.generate();
 }
 
-TEST(CsBackendMetadataTest, CanGenerateTable)
+TEST(PyBackendMetadataTest, CanGenerateTable)
 {
    using namespace cell::query;
 
    metadata m;
-   cs_backend_metadata csm(m);
+   py_backend_metadata csm(m);
 
    m.create_database("testdb");
    auto db_id = m.db("testdb").get();
@@ -54,12 +54,12 @@ TEST(CsBackendMetadataTest, CanGenerateTable)
    csm.generate();
 }
 
-TEST(CsBackendMetadataTest, CanGenerateColumn)
+TEST(PyBackendMetadataTest, CanGenerateColumn)
 {
    using namespace cell::query;
 
    metadata m;
-   cs_backend_metadata csm(m);
+   py_backend_metadata csm(m);
 
    m.create_database("testdb");
    auto db_id = m.db("testdb").get();
@@ -74,12 +74,12 @@ TEST(CsBackendMetadataTest, CanGenerateColumn)
    csm.generate();
 }
 
-TEST(CsBackendMetadataTest, CanGenerateColumns)
+TEST(PyBackendMetadataTest, CanGenerateColumns)
 {
    using namespace cell::query;
 
    metadata m;
-   cs_backend_metadata csm(m);
+   py_backend_metadata csm(m);
 
    m.create_database("test_db");
    auto db_id = m.db("test_db").get();

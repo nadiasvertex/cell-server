@@ -23,6 +23,12 @@ public:
    {
       return column_id(value);
    }
+
+   /** Convert to a uint64. */
+   std::uint64_t as_uint64() const
+   {
+      return id;
+   }
 	
 	/**
 	 * Copy a column id.

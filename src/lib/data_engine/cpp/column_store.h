@@ -110,7 +110,7 @@ public:
 			auto pos = vi_map.find(value);
 			if (pos != vi_map.end())
 			{
-				inc_ref(pos->first);
+				inc_ref(column_id::from_uint64(pos->first));
 				return pos->second;
 			}
 		}
@@ -129,9 +129,6 @@ public:
 		
 		return new_id;
 	}
-   
-   virtual bool filter(const column_id& cid, MonoMethod *m) {}
-   virtual MonoObject* transform(const column_id& cid, MonoMethod *m) {}
 };
 
 } // end namespace engine
