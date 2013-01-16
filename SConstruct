@@ -44,8 +44,8 @@ env.Library("sql", glob("src/lib/query/cpp/*.cpp") + \
 
 # Data engine library
 env.Library("data_engine", glob("src/lib/data_engine/cpp/*.cpp"))
-env.CLILibrary("data_engine_framework", glob("src/lib/data_engine/cs/*.cs"),
-			   CILLIBS=["Mono.CSharp"])
+# env.CLILibrary("data_engine_framework", glob("src/lib/data_engine/cs/*.cs"),
+# 			   CILLIBS=["Mono.CSharp"])
 
 # Processor library
 # env.Library("processor", glob("build/processor/proto/*.cc")+\

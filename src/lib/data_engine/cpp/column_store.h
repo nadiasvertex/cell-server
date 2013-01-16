@@ -2,8 +2,10 @@
 #define __CELL_ENGINE_COLUMN_STORE_H__
 
 #include <cstdint>
+#include <vector>
 #include <unordered_map>
 #include <data_engine/cpp/data_store.h>
+#include <data_engine/cpp/filter.h>
 
 namespace cell
 {
@@ -129,7 +131,7 @@ public:
    * match will have their ids stored in a vector. The
    * vector is returned to the caller.
    */
-  column_id_list find(const binary_predicate& p)
+  column_id_list find(const predicate<T> & p)
   {
     column_id_list matches;
     for(auto& el : iv_map)
