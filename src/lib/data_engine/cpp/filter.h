@@ -21,135 +21,170 @@ enum class filter_op
 };
 
 template<typename T>
-class contains
-  {
-    std::set<T> s;
-  public:
-  contains(const std::set<T>& _s):s(_s) {}
+class predicate
+{
+public:
+  virtual bool operator()(const T& column_value)=0;
+};
 
-  bool operator()(const T& column_value)
-  {
+template<typename T>
+class contains : public predicate<T>
+{
+  std::set<T> s;
+public:
+  contains(const std::set<T>& _s):s(_s) {}
+  virtual ~contains() {}
+
+  virtual bool operator()(const T& column_value) {
     return s.find(column_value) != s.end();
   }
 
-  };
+};
 
 template<typename T, filter_op op>
-class filter
+class filter : public predicate<T>
 {
   T predicate_value;
 public:
- filter(const T& _predicate_value):predicate_value(_predicate_value) {}
-
-  /**
-   * Runs a simple filter over the column store and returns a list
-   * of matching columns.
-   *
-   * @param column_value: The value to compare with.
-   *
-   * @returns: True if the predicate matches.
-   */
-  bool operator()(const T& column_value);
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
 };
 
+template<typename T>
 class filter<T, filter_op::EQ>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+  bool operator()(const T& column_value) {
     return (predicate_value == column_value);
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::NE>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return (predicate_value != column_value);
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::LE>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return (predicate_value <= column_value);
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::GE>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return (predicate_value >= column_value);
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::LT>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return (predicate_value < column_value);
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::GT>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return (predicate_value > column_value);
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::TRUE>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return true;
-  }    
+  }
 };
 
+template<typename T>
 class filter<T, filter_op::FALSE>
 {
- public:
-  bool operator()(const T& column_value)
-  {   
+  T predicate_value;
+public:
+  filter(const T& _predicate_value):predicate_value(_predicate_value) {}
+  virtual ~filter() {}
+
+  bool operator()(const T& column_value) {
     return false;
-  }    
+  }
 };
 
-template<typename T, bool and>
-class binary_predicate
+template<typename T, bool _and_>
+class binary_predicate : public predicate<T>
 {
-  filter left, right;
- public:
- binary_predicate(const filter& _left, const filter& _right) 
-   : left(_left), right(_right) {}
- 
+  predicate<T> left, right;
+public:
+  binary_predicate(const predicate<T>& _left, const predicate<T>& _right)
+    : left(_left), right(_right) {}
+
   bool operator()(const T& column_value);
 };
 
- class binary_predicate<T, true>
+template<typename T>
+class binary_predicate<T, true>
 {
- public:
-  bool operator()(const T& column_value)
-  {
+  predicate<T> left, right;
+public:
+  binary_predicate(const predicate<T>& _left, const predicate<T>& _right)
+    : left(_left), right(_right) {}
+  bool operator()(const T& column_value) {
     return left(column_value) && right(column_value);
   }
 
 };
 
- class binary_predicate<T, false>
+template<typename T>
+class binary_predicate<T, false>
 {
- public:
-  bool operator()(const T& column_value)
-  {
+  predicate<T> left, right;
+public:
+  binary_predicate(const predicate<T>& _left, const predicate<T>& _right)
+    : left(_left), right(_right) {}
+  bool operator()(const T& column_value) {
     return left(column_value) || right(column_value);
   }
 
@@ -158,3 +193,5 @@ class binary_predicate
 
 } // end namespace engine
 } // end namespace cell
+
+#endif // __CELL_ENGINE_FILTER_H__
