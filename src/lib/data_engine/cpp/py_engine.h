@@ -21,7 +21,8 @@ class py_engine
   public:
      py_guard(const py_engine& _e):e(_e)
      {
-        old_thread_state = PyThreadState_Swap(e.thread_state);
+        old_thread_state = 
+	  PyThreadState_Swap(e.thread_state);
      }
 
      ~py_guard()

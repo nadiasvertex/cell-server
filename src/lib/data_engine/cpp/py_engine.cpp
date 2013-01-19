@@ -34,6 +34,9 @@ namespace engine
 				Py_eval_input,  
 				PyEval_GetGlobals(),
 				PyEval_GetLocals());
+
+     return result == Py_True;
+     
   }
 
 

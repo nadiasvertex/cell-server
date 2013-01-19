@@ -26,7 +26,7 @@ def build(mgr, package_name, version, status):
    os.chdir(build_dir)
 
    try:
-      configure_cmd = "./configure --prefix=%s --static --64" % \
+      configure_cmd = "./configure --prefix=%s --static" % \
           toolchain_platform_dir
       if mgr.run(configure_cmd) != 0:
          return False
