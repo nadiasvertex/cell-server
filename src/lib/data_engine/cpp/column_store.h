@@ -19,6 +19,9 @@ public:
   typedef std::unordered_map<T, column_id> value_id_map_type;
 
   typedef std::unordered_map<column_id, std::uint64_t, column_id_hash> id_ref_map_type;
+
+  typedef std::vector<column_id> column_id_list;
+
 private:
   /** Maps ids to values. */
   id_value_map_type iv_map;
@@ -111,13 +114,31 @@ public:
     auto new_id = id_generator.next();
     iv_map.insert(std::make_pair(new_id, value));
 
-    if (iv_map.size() >= threshold && (!vi_map.empty())) {
+    if (iv_map.size() >= threshold 
+	&& (!vi_map.empty())) {
       vi_map.clear();
     } else {
       vi_map.insert(std::make_pair(value, new_id));
     }
 
     return new_id;
+  }
+
+  /**
+   * Executes a predicate over a column. Columns which
+   * match will have their ids stored in a vector. The
+   * vector is returned to the caller.
+   */
+  column_id_list find(const binary_predicate& p)
+  {
+    column_id_list matches;
+    for(auto& el : iv_map)
+      {
+	if (p(el.second))
+	  {
+	    matches.push_back(el.first);
+	  }
+      }
   }
 };
 
