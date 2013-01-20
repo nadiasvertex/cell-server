@@ -116,8 +116,8 @@ public:
     auto new_id = id_generator.next();
     iv_map.insert(std::make_pair(new_id, value));
 
-    if (iv_map.size() >= threshold 
-	&& (!vi_map.empty())) {
+    if (iv_map.size() >= threshold
+        && (!vi_map.empty())) {
       vi_map.clear();
     } else {
       vi_map.insert(std::make_pair(value, new_id));
@@ -131,16 +131,15 @@ public:
    * match will have their ids stored in a vector. The
    * vector is returned to the caller.
    */
-  column_id_list find(const predicate<T> & p)
-  {
-    column_id_list matches;
-    for(auto& el : iv_map)
-      {
-	if (p(el.second))
-	  {
-	    matches.push_back(el.first);
-	  }
+  column_id_list find(const predicate<T>& p) {
+   column_id_list matches;
+
+   for(auto& el : iv_map) {
+      if (p(el.second)) {
+        matches.push_back(el.first);
       }
+      return matches;
+    }
   }
 };
 
