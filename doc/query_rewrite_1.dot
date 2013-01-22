@@ -1,0 +1,56 @@
+digraph {
+	
+	s_AND1 -> s_LE1;
+	s_AND1 -> s_GE1;
+	s_OR1 -> s_AND4;
+	s_OR1 -> s_AND1;
+	s_LE1 -> s_AGE1;
+	s_GE1 -> s_AGE2;
+	s_LE1 -> s_20;
+	s_GE1 -> s_40;
+	s_EQ1 -> s_STATE1;
+	s_EQ1 -> s_CO;
+	
+
+	s_LE1 [label="<="];
+	s_GE1 [label=">="];
+	s_AGE1 [label="age"];
+	s_AGE2 [label="age"];
+	s_40 [label="40"];
+	s_20 [label="20"];
+	s_AND1 [label="&&"];
+	s_AND2 [label="&&"];
+	s_EQ1 [label="=="];
+	s_CO [label="CO"];
+	s_STATE1 [label="state"];
+
+	s_AND3 -> s_LE2;
+	s_AND3 -> s_GE2;
+	s_AND4 -> s_EQ2;
+	s_AND4 -> s_AND3;
+	s_LE2 -> s_AGE3;
+	s_GE2 -> s_AGE4;
+	s_LE2 -> s_25;
+	s_GE2 -> s_35;
+	s_EQ2 -> s_STATE2;
+	s_EQ2 -> s_WY;
+	
+
+	s_LE2 [label="<="];
+	s_GE2 [label=">="];
+	s_AGE3 [label="age"];
+	s_AGE4 [label="age"];
+	s_35 [label="35"];
+	s_25 [label="25"];
+	s_AND3 [label="&&"];
+	s_AND4 [label="&&"];
+	s_EQ2 [label="=="];
+	s_WY [label="WY"];
+	s_STATE2 [label="state"];
+
+	s_AND2 -> s_OR1;
+	s_AND2 -> s_EQ1;
+
+	s_OR1 [label="||"];
+
+}
