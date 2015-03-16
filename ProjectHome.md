@@ -1,0 +1,1 @@
+Cell integrates your application with a relational data store. It provides faster access to the data, and transparently distributes your application across an elastic cluster.
